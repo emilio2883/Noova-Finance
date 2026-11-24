@@ -136,8 +136,8 @@ description: "Task list for Noova Finance MVP implementation"
 ### Implementation for User Story 4
 
 - [x] T038 [US4] Create RecurringGenerator service in lib/data/services/recurring_generator.dart (find due rules, generate transactions, update lastGenerated)
-- [ ] T039 [US4] Hook RecurringGenerator into app startup (run on app launch, generate any overdue recurring txns)
-- [ ] T040 [US4] Add recurring rule management UI in lib/features/settings/ (create/edit/deactivate recurring rules)
+- [x] T039 [US4] Hook RecurringGenerator into app startup (run on app launch, generate any overdue recurring txns)
+- [x] T040 [US4] Add recurring rule management UI in lib/features/settings/ (create/edit/deactivate recurring rules)
 
 **Checkpoint**: Recurring expenses auto-generate correctly
 
@@ -189,7 +189,7 @@ description: "Task list for Noova Finance MVP implementation"
 - [x] T047 [US7] Create BudgetChecker service in lib/data/services/budget_checker.dart (calculate spent per category, compare to budget, trigger notifications)
 - [x] T048 [US7] Create BudgetProvider in lib/features/budgets/providers/budget_provider.dart (load budgets, suggest from historical average)
 - [x] T049 [US7] Create BudgetsScreen in lib/features/budgets/budgets_screen.dart (list variable categories, suggested amounts, edit thresholds, enable/disable)
-- [ ] T050 [US7] Hook BudgetChecker into transaction save flow (after each new expense, check thresholds)
+- [x] T050 [US7] Hook BudgetChecker into transaction save flow (after each new expense, check thresholds)
 
 **Checkpoint**: Budgets and alerts work
 
@@ -208,8 +208,8 @@ description: "Task list for Noova Finance MVP implementation"
 ### Implementation for User Story 8
 
 - [x] T052 [US8] Create LockScreen in lib/features/auth/lock_screen.dart (PIN pad 0-9, biometric button, 3-strike cooldown)
-- [ ] T053 [US8] Create PinSetup widget in lib/features/settings/widgets/pin_setup.dart (first-run PIN creation, confirm PIN)
-- [ ] T054 [US8] Store PIN hash in flutter_secure_storage, check on app launch, route to /lock or /dashboard
+- [x] T053 [US8] Create PinSetup widget in lib/features/settings/widgets/pin_setup.dart (first-run PIN creation, confirm PIN)
+- [x] T054 [US8] Store PIN hash in flutter_secure_storage, check on app launch, route to /lock or /dashboard
 
 **Checkpoint**: App requires authentication to access financial data
 
@@ -226,7 +226,7 @@ description: "Task list for Noova Finance MVP implementation"
 ### Implementation for User Story 9
 
 - [x] T056 [US9] Create ExcelExporter service in lib/data/services/excel_exporter.dart (query all txns, group by year+quincena, build sheets with syncfusion_flutter_xlsio, save file)
-- [ ] T057 [US9] Add export button in Settings screen (trigger export, share/save file)
+- [x] T057 [US9] Add export button in Settings screen (trigger export, share/save file)
 
 **Checkpoint**: Export produces valid .xlsx
 
@@ -251,8 +251,8 @@ description: "Task list for Noova Finance MVP implementation"
 
 ### Implementation for User Story 11
 
-- [ ] T060 [US11] Create ReminderConfig widget in lib/features/settings/widgets/reminder_config.dart (enable/disable, time picker)
-- [ ] T061 [US11] Schedule daily local notification via flutter_local_notifications on settings save
+- [x] T060 [US11] Create ReminderConfig widget in lib/features/settings/widgets/reminder_config.dart (enable/disable, time picker)
+- [x] T061 [US11] Schedule daily local notification via flutter_local_notifications on settings save
 
 **Checkpoint**: Reminders fire at configured time
 

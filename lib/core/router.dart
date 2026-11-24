@@ -12,14 +12,26 @@ import '../features/import/import_screen.dart';
 import '../features/quincenal/quincenal_screen.dart';
 import '../features/settings/settings_screen.dart';
 
-/// App navigation with optional PIN lock redirect.
-/// Routes: /lock, /dashboard, /quincenal, /charts, /budgets,
-/// /categories, /import, /settings
+/// Session-level auth state. [pinRequired] is cached once at startup
+/// (main.dart reads settings after opening the DB); [unlocked] resets
+/// on every app restart.
+class UnlockState {
+  UnlockState._();
+  static final UnlockState instance = UnlockState._();
+  bool pinRequired = false;
+  bool unlocked = false;
+}
+
+/// App navigation with PIN lock redirect (US8).
 GoRouter buildRouter() {
   return GoRouter(
     initialLocation: '/dashboard',
     redirect: (context, state) {
-      // Auth redirect is wired in Phase 10 (US8); default open for now.
+      final loc = state.matchedLocation;
+      if (loc == '/lock') return null;
+      if (UnlockState.instance.pinRequired && !UnlockState.instance.unlocked) {
+        return '/lock';
+      }
       return null;
     },
     routes: [
@@ -86,7 +98,10 @@ class LockGate extends ConsumerWidget {
           }
           return LockScreen(
             pinHash: pin,
-            onUnlocked: () => context.go('/dashboard'),
+            onUnlocked: () {
+              UnlockState.instance.unlocked = true;
+              context.go('/dashboard');
+            },
           );
         },
       ),

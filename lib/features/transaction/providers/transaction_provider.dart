@@ -1,6 +1,7 @@
 import 'package:decimal/decimal.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/services/notification_service.dart';
 import '../../../data/models/transaction.dart';
 import '../../../data/providers.dart';
 import '../../dashboard/providers/dashboard_provider.dart';
@@ -26,6 +27,11 @@ class TransactionService {
       description: description,
     ));
     refreshDashboard(_ref);
+
+    // Budget alert hook (T050): check thresholds after each expense.
+    if (type == TransactionType.expense) {
+      await _checkBudgets(categoryId);
+    }
   }
 
   Future<void> update(Transaction t) async {
@@ -38,6 +44,39 @@ class TransactionService {
     final repo = await _ref.read(transactionRepoProvider.future);
     await repo.delete(id);
     refreshDashboard(_ref);
+  }
+
+  /// Check budgets and fire a notification if the inserted expense
+  /// crossed a threshold (spec FR-016/FR-017).
+  Future<void> _checkBudgets(int categoryId) async {
+    try {
+      final checker = await _ref.read(budgetCheckerProvider.future);
+      final alerts = await checker.checkQuincena();
+      final categoryAlerts =
+          alerts.where((a) => a.categoryId == categoryId).toList();
+      for (final alert in categoryAlerts) {
+        final catRepo = await _ref.read(categoryRepoProvider.future);
+        final cat = await catRepo.getById(alert.categoryId);
+        final name = cat?.name ?? 'Categoría';
+        if (alert.exceeded) {
+          await NotificationService.show(
+            id: 100 + alert.categoryId,
+            title: 'Presupuesto excedido',
+            body:
+                '$name: ${alert.percentUsed}% del presupuesto quincenal usado.',
+          );
+        } else {
+          await NotificationService.show(
+            id: 100 + alert.categoryId,
+            title: 'Alerta de presupuesto',
+            body:
+                '$name: ${alert.percentUsed}% del presupuesto quincenal usado.',
+          );
+        }
+      }
+    } catch (_) {
+      // Budget check is best-effort: never block transaction saving.
+    }
   }
 }
 

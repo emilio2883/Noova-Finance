@@ -44,7 +44,7 @@ class DecimalUtils {
   static Decimal percent(Decimal part, Decimal total) {
     if (total == Decimal.zero) return Decimal.zero;
     final ratio = (part / total) * _hundred.toRational();
-    return ratio.toDecimal(scale: 2);
+    return ratio.toDecimal(scaleOnInfinitePrecision: 4);
   }
 
   /// Convert double (e.g. from Excel parser) to Decimal safely.

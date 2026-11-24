@@ -25,7 +25,7 @@ class AppDatabase {
       directory: dir.path,
       name: 'noova_finance',
     );
-    return _instance;
+    return _instance!;
   }
 
   /// For tests: inject a mock/test instance.

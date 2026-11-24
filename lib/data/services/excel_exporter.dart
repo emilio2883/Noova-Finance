@@ -1,8 +1,6 @@
 import 'package:decimal/decimal.dart';
-import 'package:intl/intl.dart';
 import 'package:syncfusion_flutter_xlsio/xlsio.dart' as xls;
 
-import '../models/category.dart';
 import '../models/transaction.dart';
 import '../repositories/category_repo.dart';
 import '../repositories/transaction_repo.dart';
@@ -29,7 +27,6 @@ class ExcelExporter {
     final years = byYear.keys.toList()..sort();
 
     final workbook = xls.Workbook();
-    final fmt = NumberFormat('0.00');
 
     for (final year in years) {
       final sheet = workbook.worksheets.addWithName('Y${year % 100}');

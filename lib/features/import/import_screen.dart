@@ -31,8 +31,7 @@ class _ImportScreenState extends ConsumerState<ImportScreen> {
       _result = null;
     });
 
-    final importerAsync = ref.read(excelImporterProvider);
-    final importer = await importerAsync.future;
+    final importer = await ref.read(excelImporterProvider.future);
 
     final result = await importer.importBytes(
       picked.files.single.bytes!,

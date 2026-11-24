@@ -11,7 +11,7 @@ class TransactionRepository {
   Future<int> insert(Transaction t) =>
       _isar.writeTxn(() => _isar.transactions.put(t));
 
-  Future<int> insertAll(List<Transaction> ts) =>
+  Future<List<int>> insertAll(List<Transaction> ts) =>
       _isar.writeTxn(() => _isar.transactions.putAll(ts));
 
   Future<void> update(Transaction t) =>
@@ -40,7 +40,7 @@ class TransactionRepository {
 
   /// All transactions up to and including [date].
   Future<List<Transaction>> getUpTo(DateTime date) =>
-      _isar.transactions.filter().dateLessThanOrEqual(date).findAll();
+      _isar.transactions.filter().dateLessThan(date, include: true).findAll();
 
   Future<List<Transaction>> getAll() =>
       _isar.transactions.where().findAll();

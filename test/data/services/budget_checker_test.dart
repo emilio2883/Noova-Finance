@@ -1,7 +1,7 @@
 import 'package:decimal/decimal.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:isar/isar.dart';
-import 'package:path_provider/path_provider.dart';
+import 'dart:io';
 
 import 'package:noova_finance/data/models/app_settings.dart';
 import 'package:noova_finance/data/models/budget.dart';
@@ -21,7 +21,8 @@ void main() {
   late BudgetChecker checker;
 
   setUpAll(() async {
-    final dir = await getTemporaryDirectory();
+    await Isar.initializeIsarCore(download: true);
+    final dir = Directory.systemTemp;
     isar = await Isar.open(
       [
         TransactionSchema,

@@ -48,5 +48,5 @@ class RecurringRule {
     required this.startDate,
     this.endDate,
     DateTime? lastGenerated,
-  }) : lastGenerated = lastGenerated ?? startDate;
+  });
 }

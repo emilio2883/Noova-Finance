@@ -57,6 +57,7 @@ class ChartsScreen extends ConsumerWidget {
           },
         ),
       ),
+      bottomNavigationBar: const MainNavBar(location: '/charts'),
     );
   }
 }
@@ -157,19 +158,19 @@ class _SaldoLineChart extends StatelessWidget {
                 getDrawingHorizontalLine: (v) =>
                     const FlLine(color: NoovaTheme.surface, strokeWidth: 1),
               ),
-              titlesData: const FlTitlesData(
-                leftTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                topTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                rightTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
+              titlesData: FlTitlesData(
+                leftTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
                 bottomTitles: AxisTitles(
                   sideTitles: SideTitles(
                     showTitles: true,
                     reservedSize: 28,
                     interval: 3,
                     getTitlesWidget: (v, _) => Padding(
-                      padding: EdgeInsets.only(top: 6),
+                      padding: const EdgeInsets.only(top: 6),
                       child: Text('M${v.toInt() + 1}',
-                          style: TextStyle(fontSize: 10)),
+                          style: const TextStyle(fontSize: 10)),
                     ),
                   ),
                 ),
@@ -183,7 +184,7 @@ class _SaldoLineChart extends StatelessWidget {
                   dotData: const FlDotData(show: false),
                   belowBarData: BarAreaData(
                     show: true,
-                    color: NoovaTheme.accent.withOpacity(0.1),
+                    color: NoovaTheme.accent.withValues(alpha: 0.1),
                   ),
                 ),
               ],
@@ -191,7 +192,6 @@ class _SaldoLineChart extends StatelessWidget {
           ),
         ),
       ),
-      bottomNavigationBar: const MainNavBar(location: '/charts'),
     );
   }
 }

@@ -18,7 +18,7 @@ import '../features/settings/settings_screen.dart';
 GoRouter buildRouter() {
   return GoRouter(
     initialLocation: '/dashboard',
-    redirect: (context, state) async {
+    redirect: (context, state) {
       // Auth redirect is wired in Phase 10 (US8); default open for now.
       return null;
     },

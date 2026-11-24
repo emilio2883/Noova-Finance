@@ -1,13 +1,15 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:noova_finance/app.dart';
 
 void main() {
-  testWidgets('App builds and shows dashboard placeholder', (WidgetTester tester) async {
-    // Build our app and trigger a frame.
-    await tester.pumpWidget(const NoovaApp());
+  testWidgets('App builds and shows dashboard', (WidgetTester tester) async {
+    await tester.pumpWidget(const ProviderScope(child: NoovaApp()));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 100));
 
-    // Verify the dashboard placeholder renders.
-    expect(find.text('Noova Finance'), findsWidgets);
+    // Dashboard app bar renders (data providers load async in background)
+    expect(find.text('Noova Finance'), findsOneWidget);
   });
 }

@@ -1,6 +1,3 @@
-import 'package:isar/isar.dart';
-
-import '../../core/utils/date_utils.dart';
 import '../models/recurring_rule.dart';
 import '../models/transaction.dart';
 import '../repositories/recurring_repo.dart';
@@ -11,9 +8,8 @@ import '../repositories/transaction_repo.dart';
 class RecurringGenerator {
   final RecurringRepository _recurringRepo;
   final TransactionRepository _transactionRepo;
-  final Isar _isar;
 
-  RecurringGenerator(this._isar, this._recurringRepo, this._transactionRepo);
+  RecurringGenerator(this._recurringRepo, this._transactionRepo);
 
   /// Generate all due transactions as of [now]. Returns count generated.
   Future<int> generateDue({DateTime? now}) async {

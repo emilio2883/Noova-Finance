@@ -18,7 +18,7 @@ class QuincenalScreen extends ConsumerStatefulWidget {
   ConsumerState<QuincenalScreen> createState() => _QuincenalScreenState();
 }
 
-class _QuincenalScreenState extends State<QuincenalScreen> {
+class _QuincenalScreenState extends ConsumerState<QuincenalScreen> {
   DateTime _selected = DateTime.now();
 
   void _shiftQuincena(int direction) {

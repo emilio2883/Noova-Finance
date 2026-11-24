@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/theme.dart';
+import '../../core/utils/decimal_utils.dart';
+import '../../data/models/budget.dart';
+import '../../data/models/transaction.dart';
 import '../../data/providers.dart';
 
 /// Budgets for variable categories with historical suggestions (US7).

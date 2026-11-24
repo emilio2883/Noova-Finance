@@ -37,11 +37,12 @@ class RecurringRepository {
       if (r.startDate.isAfter(now)) return false;
       if (r.endDate != null && r.endDate!.isBefore(now)) return false;
       // Due if we've passed the activation day of the current period
-      // and lastGenerated hasn't covered it yet.
-      final last = r.lastGenerated ?? r.startDate;
+      // and lastGenerated hasn't covered it yet (null = never generated).
+      final last = r.lastGenerated;
       final nowPeriod = _periodKey(now, r.frequency);
-      final lastPeriod = _periodKey(last, r.frequency);
-      return nowPeriod != lastPeriod && now.day >= _effectiveDay(now, r.activationDay);
+      final lastPeriod = last == null ? null : _periodKey(last, r.frequency);
+      if (lastPeriod != null && nowPeriod == lastPeriod) return false;
+      return now.day >= _effectiveDay(now, r.activationDay);
     }).toList();
   }
 

@@ -52,10 +52,9 @@ final saldoCalculatorProvider = Provider<SaldoCalculator>((ref) {
 });
 
 final recurringGeneratorProvider = FutureProvider<RecurringGenerator>((ref) async {
-  final isar = await ref.watch(isarProvider.future);
   final recurringRepo = await ref.watch(recurringRepoProvider.future);
   final transactionRepo = await ref.watch(transactionRepoProvider.future);
-  return RecurringGenerator(isar, recurringRepo, transactionRepo);
+  return RecurringGenerator(recurringRepo, transactionRepo);
 });
 
 final budgetCheckerProvider = FutureProvider<BudgetChecker>((ref) async {

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 
 import '../../../core/theme.dart';
-import '../../../core/utils/money_format.dart';
 
 /// Big current-saldo card at the top of the dashboard.
 class SaldoCard extends StatelessWidget {

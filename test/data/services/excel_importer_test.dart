@@ -2,7 +2,7 @@ import 'package:decimal/decimal.dart';
 import 'package:excel/excel.dart' as x;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:isar/isar.dart';
-import 'package:path_provider/path_provider.dart';
+import 'dart:io';
 
 import 'package:noova_finance/data/models/app_settings.dart';
 import 'package:noova_finance/data/models/budget.dart';
@@ -20,7 +20,8 @@ void main() {
   late ExcelImporter importer;
 
   setUpAll(() async {
-    final dir = await getTemporaryDirectory();
+    await Isar.initializeIsarCore(download: true);
+    final dir = Directory.systemTemp;
     isar = await Isar.open(
       [
         TransactionSchema,
@@ -48,30 +49,31 @@ void main() {
   /// Builds a small workbook mimicking the real structure.
   List<int> buildWorkbook() {
     final excel = x.Excel.createExcel();
-    excel.rename('Sheet1', 'Y26');
-    final sheet = excel.tables['Y26']!;
+    // Accessing by name auto-creates the sheet (Sheet1 also exists; the
+    // importer filters sheets by the Y\d\d pattern so it is ignored).
+    final sheet = excel['Y26'];
 
     // Row 1: months
-    sheet.updateCell(x.CellIndex.indexByString('B1'), x.TextCellValue('Enero'));
+    sheet.updateCell(x.CellIndex.indexByString('B1'), 'Enero');
     // Row 2: quincena headers
-    sheet.updateCell(x.CellIndex.indexByString('B2'), x.TextCellValue('1-15'));
-    sheet.updateCell(x.CellIndex.indexByString('C2'), x.TextCellValue('15-30'));
+    sheet.updateCell(x.CellIndex.indexByString('B2'), '1-15');
+    sheet.updateCell(x.CellIndex.indexByString('C2'), '15-30');
 
     // Row 3: Saldo Inicial
-    sheet.updateCell(x.CellIndex.indexByString('A3'), x.TextCellValue('Saldo Inicial'));
-    sheet.updateCell(x.CellIndex.indexByString('B3'), x.DoubleCellValue(1000.0));
+    sheet.updateCell(x.CellIndex.indexByString('A3'), 'Saldo Inicial');
+    sheet.updateCell(x.CellIndex.indexByString('B3'), 1000.0);
 
     // Row 4: Salario (income)
-    sheet.updateCell(x.CellIndex.indexByString('A4'), x.TextCellValue('Salario'));
-    sheet.updateCell(x.CellIndex.indexByString('B4'), x.DoubleCellValue(2800.0));
+    sheet.updateCell(x.CellIndex.indexByString('A4'), 'Salario');
+    sheet.updateCell(x.CellIndex.indexByString('B4'), 2800.0);
 
     // Row 5: Restaurante (expense, negative in Excel)
-    sheet.updateCell(x.CellIndex.indexByString('A5'), x.TextCellValue('Restaurante'));
-    sheet.updateCell(x.CellIndex.indexByString('B5'), x.DoubleCellValue(-150.50));
+    sheet.updateCell(x.CellIndex.indexByString('A5'), 'Restaurante');
+    sheet.updateCell(x.CellIndex.indexByString('B5'), -150.50);
 
     // Row 6: group row (must be skipped)
-    sheet.updateCell(x.CellIndex.indexByString('A6'), x.TextCellValue('Alimentos'));
-    sheet.updateCell(x.CellIndex.indexByString('B6'), x.DoubleCellValue(-150.50));
+    sheet.updateCell(x.CellIndex.indexByString('A6'), 'Alimentos');
+    sheet.updateCell(x.CellIndex.indexByString('B6'), -150.50);
 
     final bytes = excel.save()!;
     return bytes;
@@ -85,16 +87,18 @@ void main() {
     final all = await txnRepo.getAll();
     expect(all.length, 2);
 
+    final salarioCat = await catRepo.getByImportKey('Salario');
     final salario = all.firstWhere(
-      (t) => t.description!.contains('Salario'),
+      (t) => t.categoryId == salarioCat!.id,
       orElse: () => throw StateError('missing Salario'),
     );
     expect(salario.type, TransactionType.income);
     expect(salario.amount, Decimal.parse('2800.0'));
     expect(salario.date, DateTime(2026, 1, 1)); // quincena 1 -> day 1
 
+    final restauranteCat = await catRepo.getByImportKey('Restaurante');
     final restaurante = all.firstWhere(
-      (t) => t.description!.contains('Restaurante'),
+      (t) => t.categoryId == restauranteCat!.id,
       orElse: () => throw StateError('missing Restaurante'),
     );
     expect(restaurante.type, TransactionType.expense);
@@ -104,7 +108,6 @@ void main() {
   test('group rows are skipped (no double counting)', () async {
     final result = await importer.importBytes(buildWorkbook());
     expect(result.imported, 2);
-    final all = await txnRepo.getAll();
     // No transaction with the Alimentos category directly from the group row
     final alimentosCat = await catRepo.getByImportKey('Alimentos');
     expect(alimentosCat, isNull); // Alimentos is not a leaf category

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
-import '../core/theme.dart';
+import '../../core/theme.dart';
 
 /// Bottom navigation for the main tabs: Dashboard, Quincenal, Graficos, Ajustes.
 class MainNavBar extends StatelessWidget {
@@ -21,7 +21,7 @@ class MainNavBar extends StatelessWidget {
     return NavigationBar(
       backgroundColor: NoovaTheme.surface,
       selectedIndex: _index,
-      indicatorColor: NoovaTheme.accent.withOpacity(0.15),
+      indicatorColor: NoovaTheme.accent.withValues(alpha: 0.15),
       onDestinationSelected: (i) {
         switch (i) {
           case 0:

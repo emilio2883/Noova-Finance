@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/utils/date_utils.dart';
 import '../../../data/providers.dart';
+import '../../../data/services/saldo_calculator.dart';
 import '../../../data/models/transaction.dart';
 
 /// Aggregated dashboard state.
@@ -25,7 +26,6 @@ class DashboardData {
 /// Recomputes on every change (after insert/update/delete).
 final dashboardProvider = FutureProvider.autoDispose<DashboardData>((ref) async {
   final repo = await ref.watch(transactionRepoProvider.future);
-  final calc = ref.watch(saldoCalculatorProvider);
 
   final now = DateTime.now();
   final all = await repo.getAll();
@@ -35,10 +35,10 @@ final dashboardProvider = FutureProvider.autoDispose<DashboardData>((ref) async 
   final recent = await repo.getRecent(limit: 15);
 
   return DashboardData(
-    saldo: calc.saldo(all, now),
-    ingresosMes: calc.ingresos(all, monthStart, monthEnd),
-    gastosMes: calc.gastos(all, monthStart, monthEnd),
-    utilidadMes: calc.utilidad(all, monthStart, monthEnd),
+    saldo: SaldoCalculator.saldo(all, now),
+    ingresosMes: SaldoCalculator.ingresos(all, monthStart, monthEnd),
+    gastosMes: SaldoCalculator.gastos(all, monthStart, monthEnd),
+    utilidadMes: SaldoCalculator.utilidad(all, monthStart, monthEnd),
     recent: recent,
   );
 });

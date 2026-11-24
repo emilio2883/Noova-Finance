@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 
 import '../../../core/theme.dart';
-import '../../../core/utils/money_format.dart';
 
 /// Monthly ingresos / gastos / utilidad summary card.
 class UtilidadCard extends StatelessWidget {

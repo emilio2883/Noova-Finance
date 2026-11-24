@@ -13,7 +13,7 @@ class NoovaApp extends StatelessWidget {
       title: 'Noova Finance',
       debugShowCheckedModeBanner: false,
       theme: NoovaTheme.darkTheme,
-      routerConfig: appRouter,
+      routerConfig: buildRouter(),
     );
   }
 }

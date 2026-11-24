@@ -56,4 +56,10 @@ class DecimalUtils {
   static bool equalsRounded(Decimal a, Decimal b) {
     return round2(a) == round2(b);
   }
+
+  /// Convert Decimal to ten-thousandths int (BPS-like storage for Isar).
+  static int toBps(Decimal value) => value.shift(4).toBigInt().toInt();
+
+  /// Convert ten-thousandths int back to Decimal.
+  static Decimal fromBps(int bps) => Decimal.fromInt(bps).shift(-4);
 }

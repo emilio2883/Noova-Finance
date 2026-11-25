@@ -13,7 +13,13 @@ import '../../shared/widgets/date_picker_field.dart';
 /// Quick transaction registration: amount -> category -> date -> save.
 /// Max 3 taps from home (spec SC-001).
 class QuickAddModal extends ConsumerStatefulWidget {
-  const QuickAddModal({super.key});
+  final TransactionType initialType;
+  final int? initialCategoryId;
+  const QuickAddModal({
+    super.key,
+    this.initialType = TransactionType.expense,
+    this.initialCategoryId,
+  });
 
   @override
   ConsumerState<QuickAddModal> createState() => _QuickAddModalState();
@@ -24,6 +30,13 @@ class _QuickAddModalState extends ConsumerState<QuickAddModal> {
   String _amountText = '';
   int? _categoryId;
   DateTime _date = DateTime.now();
+
+  @override
+  void initState() {
+    super.initState();
+    _type = widget.initialType;
+    _categoryId = widget.initialCategoryId;
+  }
 
   bool get _isValid {
     final amount = DecimalUtils.tryParse(_amountText);
@@ -78,7 +91,7 @@ class _QuickAddModalState extends ConsumerState<QuickAddModal> {
               // Amount
               Container(
                 decoration: BoxDecoration(
-                  color: NoovaTheme.surface,
+                  color: Theme.of(context).colorScheme.surfaceContainerHighest,
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: AmountInput(

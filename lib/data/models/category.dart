@@ -5,6 +5,7 @@ import 'transaction.dart';
 part 'category.g.dart';
 
 /// Transaction classification. Configurable per spec FR-009.
+/// Supports a 2-level hierarchy: principal (isGroup) -> subcategory (parentId).
 @collection
 class Category {
   Id id = Isar.autoIncrement;
@@ -23,12 +24,21 @@ class Category {
   /// false = hidden from selector; past transactions remain visible
   bool isActive;
 
-  /// Display order in selector and reports
+  /// Display order within its level
   int order;
 
   /// Original Excel row name for import mapping
   @Index()
   String? importKey;
+
+  /// null = top-level (principal group or standalone category).
+  /// Otherwise the id of the parent (principal) category.
+  @Index()
+  int? parentId;
+
+  /// true = principal aggregator category (holds subcategories; may also
+  /// receive transactions directly, which roll up into the group total).
+  bool isGroup;
 
   Category({
     required this.name,
@@ -38,5 +48,7 @@ class Category {
     this.isActive = true,
     this.order = 0,
     this.importKey,
+    this.parentId,
+    this.isGroup = false,
   });
 }

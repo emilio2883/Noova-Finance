@@ -56,6 +56,11 @@ const AppSettingsSchema = CollectionSchema(
       id: 7,
       name: r'reminderMinute',
       type: IsarType.long,
+    ),
+    r'themeMode': PropertySchema(
+      id: 8,
+      name: r'themeMode',
+      type: IsarType.string,
     )
   },
   estimateSize: _appSettingsEstimateSize,
@@ -85,6 +90,7 @@ int _appSettingsEstimateSize(
       bytesCount += 3 + value.length * 3;
     }
   }
+  bytesCount += 3 + object.themeMode.length * 3;
   return bytesCount;
 }
 
@@ -102,6 +108,7 @@ void _appSettingsSerialize(
   writer.writeBool(offsets[5], object.reminderEnabled);
   writer.writeLong(offsets[6], object.reminderHour);
   writer.writeLong(offsets[7], object.reminderMinute);
+  writer.writeString(offsets[8], object.themeMode);
 }
 
 AppSettings _appSettingsDeserialize(
@@ -119,6 +126,7 @@ AppSettings _appSettingsDeserialize(
     reminderEnabled: reader.readBoolOrNull(offsets[5]) ?? false,
     reminderHour: reader.readLongOrNull(offsets[6]) ?? 20,
     reminderMinute: reader.readLongOrNull(offsets[7]) ?? 0,
+    themeMode: reader.readStringOrNull(offsets[8]) ?? 'dark',
   );
   object.id = id;
   return object;
@@ -147,6 +155,8 @@ P _appSettingsDeserializeProp<P>(
       return (reader.readLongOrNull(offset) ?? 20) as P;
     case 7:
       return (reader.readLongOrNull(offset) ?? 0) as P;
+    case 8:
+      return (reader.readStringOrNull(offset) ?? 'dark') as P;
     default:
       throw IsarError('Unknown property with id $propertyId');
   }
@@ -801,6 +811,142 @@ extension AppSettingsQueryFilter
       ));
     });
   }
+
+  QueryBuilder<AppSettings, AppSettings, QAfterFilterCondition>
+      themeModeEqualTo(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'themeMode',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<AppSettings, AppSettings, QAfterFilterCondition>
+      themeModeGreaterThan(
+    String value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'themeMode',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<AppSettings, AppSettings, QAfterFilterCondition>
+      themeModeLessThan(
+    String value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'themeMode',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<AppSettings, AppSettings, QAfterFilterCondition>
+      themeModeBetween(
+    String lower,
+    String upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'themeMode',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<AppSettings, AppSettings, QAfterFilterCondition>
+      themeModeStartsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.startsWith(
+        property: r'themeMode',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<AppSettings, AppSettings, QAfterFilterCondition>
+      themeModeEndsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.endsWith(
+        property: r'themeMode',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<AppSettings, AppSettings, QAfterFilterCondition>
+      themeModeContains(String value, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.contains(
+        property: r'themeMode',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<AppSettings, AppSettings, QAfterFilterCondition>
+      themeModeMatches(String pattern, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.matches(
+        property: r'themeMode',
+        wildcard: pattern,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<AppSettings, AppSettings, QAfterFilterCondition>
+      themeModeIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'themeMode',
+        value: '',
+      ));
+    });
+  }
+
+  QueryBuilder<AppSettings, AppSettings, QAfterFilterCondition>
+      themeModeIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        property: r'themeMode',
+        value: '',
+      ));
+    });
+  }
 }
 
 extension AppSettingsQueryObject
@@ -911,6 +1057,18 @@ extension AppSettingsQuerySortBy
       sortByReminderMinuteDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'reminderMinute', Sort.desc);
+    });
+  }
+
+  QueryBuilder<AppSettings, AppSettings, QAfterSortBy> sortByThemeMode() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'themeMode', Sort.asc);
+    });
+  }
+
+  QueryBuilder<AppSettings, AppSettings, QAfterSortBy> sortByThemeModeDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'themeMode', Sort.desc);
     });
   }
 }
@@ -1031,6 +1189,18 @@ extension AppSettingsQuerySortThenBy
       return query.addSortBy(r'reminderMinute', Sort.desc);
     });
   }
+
+  QueryBuilder<AppSettings, AppSettings, QAfterSortBy> thenByThemeMode() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'themeMode', Sort.asc);
+    });
+  }
+
+  QueryBuilder<AppSettings, AppSettings, QAfterSortBy> thenByThemeModeDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'themeMode', Sort.desc);
+    });
+  }
 }
 
 extension AppSettingsQueryWhereDistinct
@@ -1085,6 +1255,13 @@ extension AppSettingsQueryWhereDistinct
   QueryBuilder<AppSettings, AppSettings, QDistinct> distinctByReminderMinute() {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'reminderMinute');
+    });
+  }
+
+  QueryBuilder<AppSettings, AppSettings, QDistinct> distinctByThemeMode(
+      {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'themeMode', caseSensitive: caseSensitive);
     });
   }
 }
@@ -1144,6 +1321,12 @@ extension AppSettingsQueryProperty
   QueryBuilder<AppSettings, int, QQueryOperations> reminderMinuteProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'reminderMinute');
+    });
+  }
+
+  QueryBuilder<AppSettings, String, QQueryOperations> themeModeProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'themeMode');
     });
   }
 }

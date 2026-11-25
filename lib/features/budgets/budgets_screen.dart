@@ -1,140 +1,114 @@
+import 'package:decimal/decimal.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/theme.dart';
-import '../../core/utils/decimal_utils.dart';
-import '../../data/models/budget.dart';
+import '../../core/utils/money_format.dart';
+import '../../data/models/category.dart';
 import '../../data/models/transaction.dart';
 import '../../data/providers.dart';
+import 'budget_editor_sheet.dart';
 
-/// Budgets for variable categories with historical suggestions (US7).
+class _ParentBudget {
+  final Category parent;
+  final List<Category> variableChildren;
+  final Decimal total;
+  _ParentBudget(this.parent, this.variableChildren, this.total);
+}
+
+/// Budgets by principal category, with a global total (US7, hierarchy-aware).
 class BudgetsScreen extends ConsumerWidget {
   const BudgetsScreen({super.key});
 
+  Future<List<_ParentBudget>> _load(WidgetRef ref) async {
+    final catRepo = await ref.read(categoryRepoProvider.future);
+    final budgetRepo = await ref.read(budgetRepoProvider.future);
+    final principals = await catRepo.getTopLevel(TransactionType.expense);
+    final budgets = await budgetRepo.getActive();
+    final byCat = {for (final b in budgets) b.categoryId: b.amountPerQuincena};
+
+    final result = <_ParentBudget>[];
+    for (final p in principals) {
+      final children = await catRepo.getChildren(p.id);
+      final variable = children.where((c) => c.isVariable).toList();
+      var total = Decimal.zero;
+      for (final c in variable) {
+        total += byCat[c.id] ?? Decimal.zero;
+      }
+      result.add(_ParentBudget(p, variable, total));
+    }
+    return result;
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final budgetRepoAsync = ref.watch(budgetRepoProvider);
-    final categoryRepoAsync = ref.watch(categoryRepoProvider);
-
     return Scaffold(
       appBar: AppBar(title: const Text('Presupuestos')),
-      body: budgetRepoAsync.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, _) => Center(child: Text('Error: $e')),
-        data: (budgetRepo) => categoryRepoAsync.when(
-          loading: () => const Center(child: CircularProgressIndicator()),
-          error: (e, _) => Center(child: Text('Error: $e')),
-          data: (categoryRepo) => FutureBuilder(
-            future: () async {
-              final budgets = await budgetRepo.getAll();
-              final variableCats =
-                  await categoryRepo.getActive(TransactionType.expense);
-              final variableOnly =
-                  variableCats.where((c) => c.isVariable).toList();
-              return {'budgets': budgets, 'cats': variableOnly};
-            }(),
-            builder: (context, snapshot) {
-              if (!snapshot.hasData) {
-                return const Center(child: CircularProgressIndicator());
-              }
-              final budgets = snapshot.data!['budgets'] as List;
-              final cats = snapshot.data!['cats'] as List;
+      body: FutureBuilder<List<_ParentBudget>>(
+        future: _load(ref),
+        builder: (context, snapshot) {
+          if (!snapshot.hasData) {
+            return const Center(child: CircularProgressIndicator());
+          }
+          final items = snapshot.data!;
+          final global = items.fold<Decimal>(
+              Decimal.zero, (acc, e) => acc + e.total);
 
-              return ListView(
-                padding: const EdgeInsets.all(12),
-                children: [
-                  for (final cat in cats)
-                    _BudgetTile(
-                      categoryName: cat.name,
-                      budget: budgets.where((b) => b.categoryId == cat.id).firstOrNull,
-                      categoryId: cat.id,
+          return ListView(
+            padding: const EdgeInsets.all(12),
+            children: [
+              Card(
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text('Presupuesto global',
+                          style: TextStyle(fontWeight: FontWeight.w600)),
+                      Text(MoneyFormat.format(global),
+                          style: const TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              color: NoovaTheme.accent)),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 8),
+              for (final item in items)
+                Card(
+                  child: ListTile(
+                    title: Text(item.parent.name),
+                    subtitle: Text(
+                      item.variableChildren.isEmpty
+                          ? 'Sin subcategorías variables'
+                          : '${item.variableChildren.length} subcategorías · ${MoneyFormat.format(item.total)} por quincena',
+                      style: const TextStyle(fontSize: 12),
                     ),
-                ],
-              );
-            },
-          ),
-        ),
+                    trailing: const Icon(Icons.chevron_right, size: 18),
+                    enabled: item.variableChildren.isNotEmpty,
+                    onTap: item.variableChildren.isEmpty
+                        ? null
+                        : () async {
+                            await showModalBottomSheet(
+                              context: context,
+                              isScrollControlled: true,
+                              backgroundColor:
+                                  Theme.of(context).colorScheme.surface,
+                              shape: const RoundedRectangleBorder(
+                                borderRadius: BorderRadius.vertical(
+                                    top: Radius.circular(20)),
+                              ),
+                              builder: (_) => BudgetEditorSheet(
+                                  categories: item.variableChildren),
+                            );
+                          },
+                  ),
+                ),
+            ],
+          );
+        },
       ),
     );
-  }
-}
-
-class _BudgetTile extends ConsumerWidget {
-  final String categoryName;
-  final dynamic budget;
-  final int categoryId;
-
-  const _BudgetTile({
-    required this.categoryName,
-    this.budget,
-    required this.categoryId,
-  });
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final hasBudget = budget != null && budget.isActive;
-    return Card(
-      child: ListTile(
-        title: Text(categoryName),
-        subtitle: Text(hasBudget
-            ? 'Cuota quincenal: \${budget.amountPerQuincena} (alerta \${budget.alertThreshold}%)'
-            : 'Sin presupuesto'),
-        trailing: Switch(
-          value: hasBudget,
-          activeColor: NoovaTheme.accent,
-          onChanged: (v) async {
-            final repo = await ref.read(budgetRepoProvider.future);
-            if (v) {
-              // Create with placeholder; user edits amount
-              await repo.insert(Budget(
-                categoryId: categoryId,
-                amountPerQuincenaBps: 0,
-              ));
-            } else if (budget != null) {
-              await repo.deactivate(budget);
-            }
-            ref.invalidate(budgetRepoProvider);
-          },
-        ),
-        onTap: hasBudget ? () => _editAmount(context, ref) : null,
-      ),
-    );
-  }
-
-  Future<void> _editAmount(BuildContext context, WidgetRef ref) async {
-    final controller = TextEditingController(
-      text: budget.amountPerQuincena.toString(),
-    );
-    final result = await showDialog<String>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: NoovaTheme.surface,
-        title: Text('Presupuesto: \$categoryName'),
-        content: TextField(
-          controller: controller,
-          keyboardType: TextInputType.number,
-          decoration: const InputDecoration(labelText: 'Monto por quincena'),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: const Text('Cancelar'),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.pop(ctx, controller.text),
-            child: const Text('Guardar'),
-          ),
-        ],
-      ),
-    );
-    if (result != null) {
-      final parsed = DecimalUtils.tryParse(result);
-      if (parsed != null) {
-        budget.amountPerQuincenaBps = parsed.shift(4).toBigInt().toInt();
-        final repo = await ref.read(budgetRepoProvider.future);
-        await repo.update(budget);
-        ref.invalidate(budgetRepoProvider);
-      }
-    }
   }
 }

@@ -5,14 +5,14 @@ import 'package:go_router/go_router.dart';
 
 import '../../core/theme.dart';
 import '../../core/utils/money_format.dart';
-import 'providers/dashboard_provider.dart';
-import 'widgets/quick_add_button.dart';
-import 'widgets/recent_transactions.dart';
-import 'widgets/saldo_card.dart';
 import '../../shared/widgets/main_nav_bar.dart';
+import 'providers/dashboard_provider.dart';
+import 'widgets/category_dashboard_card.dart';
+import 'widgets/saldo_card.dart';
 import 'widgets/utilidad_card.dart';
 
-/// Home dashboard: saldo, monthly utilidad, recent transactions, quick-add FAB.
+/// Home: dynamic finance dashboard — saldo, monthly summary, global budget,
+/// and per-category dashboards (bars sorted by spending).
 class DashboardScreen extends ConsumerWidget {
   const DashboardScreen({super.key});
 
@@ -33,57 +33,113 @@ class DashboardScreen extends ConsumerWidget {
       body: dashboardAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (e, _) => Center(child: Text('Error: $e')),
-        data: (d) => RefreshIndicator(
-          onRefresh: () async => ref.invalidate(dashboardProvider),
-          child: ListView(
-            padding: const EdgeInsets.only(bottom: 96),
-            children: [
-              SaldoCard(saldoFormatted: MoneyFormat.format(d.saldo)),
-              UtilidadCard(
-                ingresos: MoneyFormat.compact(d.ingresosMes),
-                gastos: MoneyFormat.compact(d.gastosMes),
-                utilidad: MoneyFormat.compact(d.utilidadMes),
-                utilidadPositiva: d.utilidadMes >= Decimal.zero,
-              ),
-              const Padding(
-                padding: EdgeInsets.fromLTRB(20, 12, 20, 4),
-                child: Text(
-                  'TRANSACCIONES RECIENTES',
-                  style: TextStyle(
-                    color: NoovaTheme.textSecondary,
-                    fontSize: 12,
-                    letterSpacing: 1.5,
+        data: (d) {
+          final spends = d.categorySpending
+              .where((s) => s.total > Decimal.zero)
+              .toList();
+          final maxTotal = spends.isEmpty ? 0.0 : spends.first.total.toDouble();
+
+          return RefreshIndicator(
+            onRefresh: () async => ref.invalidate(dashboardProvider),
+            child: ListView(
+              padding: const EdgeInsets.only(bottom: 24),
+              children: [
+                SaldoCard(saldoFormatted: MoneyFormat.format(d.saldo)),
+                UtilidadCard(
+                  ingresos: MoneyFormat.compact(d.ingresosMes),
+                  gastos: MoneyFormat.compact(d.gastosMes),
+                  utilidad: MoneyFormat.compact(d.utilidadMes),
+                  utilidadPositiva: d.utilidadMes >= Decimal.zero,
+                ),
+                if (d.globalBudget > Decimal.zero) _GlobalBudgetCard(data: d),
+                const Padding(
+                  padding: EdgeInsets.fromLTRB(20, 16, 20, 4),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text('GASTOS POR CATEGORÍA',
+                          style: TextStyle(
+                              color: NoovaTheme.textSecondary,
+                              fontSize: 12,
+                              letterSpacing: 1.5)),
+                      Text('Desliza ↓ gasto · ↑ presupuesto',
+                          style: TextStyle(
+                              color: NoovaTheme.textSecondary, fontSize: 10)),
+                    ],
                   ),
                 ),
-              ),
-              RecentTransactions(
-                transactions: d.recent,
-                onTap: (t) => _showTransactionDetail(context, t),
-              ),
-            ],
-          ),
-        ),
+                if (spends.isEmpty)
+                  const Padding(
+                    padding: EdgeInsets.all(24),
+                    child: Card(
+                      child: Padding(
+                        padding: EdgeInsets.all(24),
+                        child: Center(
+                          child: Text(
+                              'Aún no hay gastos esta quincena.\nDesliza abajo en una categoría para registrar.'),
+                        ),
+                      ),
+                    ),
+                  )
+                else
+                  for (final s in spends)
+                    CategoryDashboardCard(spend: s, maxTotal: maxTotal),
+              ],
+            ),
+          );
+        },
       ),
-      floatingActionButton: const QuickAddButton(),
       bottomNavigationBar: const MainNavBar(location: '/dashboard'),
     );
   }
+}
 
-  void _showTransactionDetail(BuildContext context, dynamic t) {
-    // TODO Phase 5+: full edit/delete detail sheet
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: NoovaTheme.surface,
-      builder: (_) => Padding(
-        padding: const EdgeInsets.all(20),
+class _GlobalBudgetCard extends StatelessWidget {
+  final DashboardData data;
+  const _GlobalBudgetCard({required this.data});
+
+  @override
+  Widget build(BuildContext context) {
+    final pct = data.globalBudget == Decimal.zero
+        ? 0
+        : (data.globalSpent.shift(4).toBigInt().toInt() * 100) ~/
+            data.globalBudget.shift(4).toBigInt().toInt();
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
         child: Column(
-          mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Transacción #${t.id}'),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text('Presupuesto global',
+                    style: TextStyle(fontWeight: FontWeight.w600)),
+                Text(
+                  '${MoneyFormat.format(data.globalSpent)} / ${MoneyFormat.format(data.globalBudget)}',
+                  style: const TextStyle(fontSize: 13),
+                ),
+              ],
+            ),
             const SizedBox(height: 8),
-            Text('Monto: ${t.amount}'),
-            Text('Fecha: ${t.date.day}/${t.date.month}/${t.date.year}'),
+            ClipRRect(
+              borderRadius: BorderRadius.circular(4),
+              child: LinearProgressIndicator(
+                value: (pct / 100).clamp(0.0, 1.0),
+                minHeight: 8,
+                backgroundColor:
+                    Theme.of(context).colorScheme.surfaceContainerHighest,
+                color: pct >= 100
+                    ? NoovaTheme.expense
+                    : pct >= 80
+                        ? NoovaTheme.warning
+                        : NoovaTheme.accent,
+              ),
+            ),
+            const SizedBox(height: 4),
+            Text('$pct% del presupuesto usado',
+                style: const TextStyle(
+                    fontSize: 11, color: NoovaTheme.textSecondary)),
           ],
         ),
       ),

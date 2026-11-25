@@ -85,7 +85,7 @@ void main() {
     expect(result.imported, 2); // Salario + Restaurante (Alimentos skipped)
 
     final all = await txnRepo.getAll();
-    expect(all.length, 2);
+    expect(all.length, 3); // Salario + Restaurante + Saldo Inicial
 
     final salarioCat = await catRepo.getByImportKey('Salario');
     final salario = all.firstWhere(
@@ -123,7 +123,7 @@ void main() {
     expect(second.skippedDuplicates, 2);
 
     final all = await txnRepo.getAll();
-    expect(all.length, 2);
+    expect(all.length, 3); // no duplicates; opening balance not re-added
   });
 
   test('captures opening balance from Saldo Inicial', () async {

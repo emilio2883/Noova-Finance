@@ -76,7 +76,6 @@ class _LockScreenState extends State<LockScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: NoovaTheme.background,
       body: SafeArea(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -101,7 +100,7 @@ class _LockScreenState extends State<LockScreen> {
                     shape: BoxShape.circle,
                     color: i < _entered.length
                         ? NoovaTheme.accent
-                        : NoovaTheme.surface,
+                        : Theme.of(context).colorScheme.surfaceContainerHighest,
                   ),
                 ),
               ),
@@ -115,7 +114,7 @@ class _LockScreenState extends State<LockScreen> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: List.generate(3, (i) {
                     final digit = row * 3 + i + 1;
-                    return _keyButton(digit);
+                    return _keyButton(context, digit);
                   }),
                 ),
               ),
@@ -125,7 +124,7 @@ class _LockScreenState extends State<LockScreen> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   const SizedBox(width: 72),
-                  _keyButton(0),
+                  _keyButton(context, 0),
                   _backspaceButton(),
                 ],
               ),
@@ -136,7 +135,7 @@ class _LockScreenState extends State<LockScreen> {
     );
   }
 
-  Widget _keyButton(int digit) {
+  Widget _keyButton(BuildContext context, int digit) {
     return Padding(
       padding: const EdgeInsets.all(8),
       child: InkWell(
@@ -147,7 +146,7 @@ class _LockScreenState extends State<LockScreen> {
           height: 64,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
-            color: NoovaTheme.surface,
+            color: Theme.of(context).colorScheme.surfaceContainerHighest,
           ),
           alignment: Alignment.center,
           child: Text(

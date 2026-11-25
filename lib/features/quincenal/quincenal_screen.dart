@@ -3,14 +3,26 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/theme.dart';
-import '../../shared/widgets/main_nav_bar.dart';
 import '../../core/utils/date_utils.dart';
 import '../../core/utils/money_format.dart';
+import '../../data/models/category.dart';
 import '../../data/models/transaction.dart';
 import '../../data/providers.dart';
 import '../../data/services/saldo_calculator.dart';
+import '../../shared/widgets/main_nav_bar.dart';
+import '../transaction/quick_add_modal.dart';
+import '../transaction/transaction_detail_screen.dart';
 
-/// Quincenal view: all categories + totals for the selected quincena (US5).
+class _QuincenaData {
+  final List<Transaction> txns;
+  final Map<int, Category> categories;
+  final List<Category> leaves;
+  final DateTime start;
+  final DateTime end;
+  _QuincenaData(this.txns, this.categories, this.leaves, this.start, this.end);
+}
+
+/// Quincena hub: transactions list + category filter + add button (US3/US5).
 class QuincenalScreen extends ConsumerStatefulWidget {
   const QuincenalScreen({super.key});
 
@@ -20,6 +32,7 @@ class QuincenalScreen extends ConsumerStatefulWidget {
 
 class _QuincenalScreenState extends ConsumerState<QuincenalScreen> {
   DateTime _selected = DateTime.now();
+  int? _filterCategoryId;
 
   void _shiftQuincena(int direction) {
     setState(() {
@@ -35,10 +48,41 @@ class _QuincenalScreenState extends ConsumerState<QuincenalScreen> {
     });
   }
 
+  Future<_QuincenaData> _load() async {
+    final txnRepo = await ref.read(transactionRepoProvider.future);
+    final catRepo = await ref.read(categoryRepoProvider.future);
+    final start = QuincenaUtils.quincenaStart(_selected);
+    final end = QuincenaUtils.quincenaEnd(_selected);
+    final txns = await txnRepo.getByDateRange(start, end);
+    final cats = await catRepo.getAll();
+    final leaves = [
+      ...await catRepo.getLeaves(TransactionType.expense),
+      ...await catRepo.getLeaves(TransactionType.income),
+    ];
+    return _QuincenaData(
+      txns,
+      {for (final c in cats) c.id: c},
+      leaves,
+      start,
+      end,
+    );
+  }
+
+  Future<void> _openAdd() async {
+    await showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Theme.of(context).colorScheme.surface,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (_) => const QuickAddModal(),
+    );
+    setState(() {});
+  }
+
   @override
   Widget build(BuildContext context) {
-    final txnsAsync = ref.watch(transactionRepoProvider);
-
     return Scaffold(
       appBar: AppBar(
         title: Text(QuincenaUtils.quincenaLabel(_selected)),
@@ -53,87 +97,131 @@ class _QuincenalScreenState extends ConsumerState<QuincenalScreen> {
           ),
         ],
       ),
-      body: txnsAsync.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, _) => Center(child: Text('Error: $e')),
-        data: (repo) => FutureBuilder<List<Transaction>>(
-          future: repo.getByDateRange(
-            QuincenaUtils.quincenaStart(_selected),
-            QuincenaUtils.quincenaEnd(_selected),
-          ),
-          builder: (context, snapshot) {
-            final txns = snapshot.data ?? [];
-            final start = QuincenaUtils.quincenaStart(_selected);
-            final end = QuincenaUtils.quincenaEnd(_selected);
-            final ingresos = SaldoCalculator.ingresos(txns, start, end);
-            final gastos = SaldoCalculator.gastos(txns, start, end);
-            final utilidad = ingresos - gastos;
+      floatingActionButton: FloatingActionButton(
+        onPressed: _openAdd,
+        backgroundColor: NoovaTheme.accent,
+        foregroundColor: Colors.black,
+        child: const Icon(Icons.add),
+      ),
+      body: FutureBuilder<_QuincenaData>(
+        future: _load(),
+        builder: (context, snapshot) {
+          if (!snapshot.hasData) {
+            return const Center(child: CircularProgressIndicator());
+          }
+          final data = snapshot.data!;
+          var txns = data.txns;
+          if (_filterCategoryId != null) {
+            txns = txns.where((t) => t.categoryId == _filterCategoryId).toList();
+          }
 
-            // Group by category
-            final byCategory = <int, Decimal>{};
-            for (final t in txns) {
-              byCategory[t.categoryId] =
-                  (byCategory[t.categoryId] ?? Decimal.zero) + t.amount;
-            }
+          final ingresos = SaldoCalculator.ingresos(data.txns, data.start, data.end);
+          final gastos = SaldoCalculator.gastos(data.txns, data.start, data.end);
+          final utilidad = ingresos - gastos;
 
-            return ListView(
-              children: [
-                Card(
-                  child: Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceAround,
-                      children: [
-                        _total('Ingresos', ingresos, NoovaTheme.income),
-                        _total('Gastos', gastos, NoovaTheme.expense),
-                        _total(
-                          'Utilidad',
-                          utilidad,
-                          utilidad >= Decimal.zero
-                              ? NoovaTheme.income
-                              : NoovaTheme.expense,
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-                Card(
-                  child: Column(
+          return Column(
+            children: [
+              // Totals
+              Card(
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceAround,
                     children: [
-                      for (final entry in byCategory.entries)
-                        ListTile(
-                          dense: true,
-                          title: FutureBuilder<String>(
-                            future: _categoryName(entry.key),
-                            builder: (c, s) =>
-                                Text(s.data ?? '...'),
-                          ),
-                          trailing: Text(
-                            MoneyFormat.format(entry.value),
-                            style: const TextStyle(fontWeight: FontWeight.bold),
-                          ),
-                        ),
-                      if (txns.isEmpty)
-                        const Padding(
-                          padding: EdgeInsets.all(24),
-                          child: Text('Sin transacciones en esta quincena'),
-                        ),
+                      _total('Ingresos', ingresos, NoovaTheme.income),
+                      _total('Gastos', gastos, NoovaTheme.expense),
+                      _total('Utilidad', utilidad,
+                          utilidad >= Decimal.zero ? NoovaTheme.income : NoovaTheme.expense),
                     ],
                   ),
                 ),
-              ],
-            );
-          },
-        ),
+              ),
+              // Category filter
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: Row(
+                  children: [
+                    const Icon(Icons.filter_list, size: 18),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: DropdownButton<int?>(
+                        isExpanded: true,
+                        value: _filterCategoryId,
+                        hint: const Text('Todas las categorías'),
+                        dropdownColor: Theme.of(context).colorScheme.surface,
+                        items: [
+                          const DropdownMenuItem<int?>(
+                            value: null,
+                            child: Text('Todas las categorías'),
+                          ),
+                          for (final c in data.leaves)
+                            DropdownMenuItem<int?>(
+                              value: c.id,
+                              child: Text(c.name),
+                            ),
+                        ],
+                        onChanged: (v) => setState(() => _filterCategoryId = v),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const Divider(height: 1),
+              // Transactions
+              Expanded(
+                child: txns.isEmpty
+                    ? const Center(child: Text('Sin transacciones en esta quincena'))
+                    : ListView.builder(
+                        padding: const EdgeInsets.only(bottom: 88),
+                        itemCount: txns.length,
+                        itemBuilder: (context, i) {
+                          final t = txns[i];
+                          final cat = data.categories[t.categoryId];
+                          return ListTile(
+                            leading: Icon(
+                              t.type == TransactionType.income
+                                  ? Icons.arrow_downward
+                                  : Icons.arrow_upward,
+                              color: t.type == TransactionType.income
+                                  ? NoovaTheme.income
+                                  : NoovaTheme.expense,
+                              size: 20,
+                            ),
+                            title: Text(cat?.name ?? 'Sin categoría'),
+                            subtitle: Text(
+                              '${t.date.day}/${t.date.month}/${t.date.year}'
+                              '${t.isRecurring ? ' · recurrente' : ''}',
+                              style: const TextStyle(fontSize: 12),
+                            ),
+                            trailing: Text(
+                              (t.type == TransactionType.income ? '+' : '-') +
+                                  MoneyFormat.format(t.amount),
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                color: t.type == TransactionType.income
+                                    ? NoovaTheme.income
+                                    : NoovaTheme.expense,
+                              ),
+                            ),
+                            onTap: () async {
+                              await Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) => TransactionDetailScreen(transaction: t),
+                                ),
+                              );
+                              setState(() {});
+                            },
+                          );
+                        },
+                      ),
+              ),
+            ],
+          );
+        },
       ),
       bottomNavigationBar: const MainNavBar(location: '/quincenal'),
     );
-  }
-
-  Future<String> _categoryName(int id) async {
-    final repo = await ref.read(categoryRepoProvider.future);
-    final cat = await repo.getById(id);
-    return cat?.name ?? 'Sin categoria';
   }
 
   Widget _total(String label, Decimal value, Color color) {

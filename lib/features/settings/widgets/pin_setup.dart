@@ -102,7 +102,6 @@ class _PinSetupDialogState extends ConsumerState<PinSetupDialog> {
     return showDialog<String>(
       context: context,
       builder: (ctx) => AlertDialog(
-        backgroundColor: NoovaTheme.surface,
         title: Text(title),
         content: TextField(
           controller: controller,
@@ -132,7 +131,6 @@ class _PinSetupDialogState extends ConsumerState<PinSetupDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      backgroundColor: NoovaTheme.surface,
       title: const Text('Seguridad'),
       content: Column(
         mainAxisSize: MainAxisSize.min,

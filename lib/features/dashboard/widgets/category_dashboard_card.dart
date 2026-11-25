@@ -1,0 +1,240 @@
+import 'package:decimal/decimal.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+import '../../../core/theme.dart';
+import '../../../core/utils/money_format.dart';
+import '../../budgets/budget_editor_sheet.dart';
+import '../../transaction/quick_add_modal.dart';
+import '../providers/dashboard_provider.dart';
+
+/// One category dashboard card: name, amount, dynamic bar, budget rollup.
+/// Tap -> detail sheet. Swipe down -> add expense, swipe up -> edit budgets.
+class CategoryDashboardCard extends ConsumerWidget {
+  final CategorySpend spend;
+  final double maxTotal;
+
+  const CategoryDashboardCard({
+    super.key,
+    required this.spend,
+    required this.maxTotal,
+  });
+
+  double get _fraction {
+    final t = spend.total.toDouble();
+    return maxTotal <= 0 ? 0 : (t / maxTotal).clamp(0.0, 1.0);
+  }
+
+  Future<void> _openAdd(BuildContext context) async {
+    final catId = spend.children.isNotEmpty
+        ? spend.children.first.category.id
+        : spend.parent.id;
+    await showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Theme.of(context).colorScheme.surface,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (_) => QuickAddModal(initialCategoryId: catId),
+    );
+  }
+
+  Future<void> _openBudgets(BuildContext context) async {
+    final variable = spend.children
+        .map((c) => c.category)
+        .where((c) => c.isVariable)
+        .toList();
+    if (variable.isEmpty) return;
+    await showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Theme.of(context).colorScheme.surface,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (_) => BudgetEditorSheet(categories: variable),
+    );
+  }
+
+  void _openDetail(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Theme.of(context).colorScheme.surface,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (ctx) => DraggableScrollableSheet(
+        expand: false,
+        initialChildSize: 0.5,
+        maxChildSize: 0.9,
+        builder: (ctx, controller) => ListView(
+          controller: controller,
+          padding: const EdgeInsets.all(20),
+          children: [
+            Text(spend.parent.name,
+                style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+            const SizedBox(height: 4),
+            Text('Gasto quincena: ${MoneyFormat.format(spend.total)}',
+                style: const TextStyle(color: NoovaTheme.textSecondary)),
+            const SizedBox(height: 16),
+            for (final child in spend.children)
+              _ChildRow(child: child),
+            const SizedBox(height: 16),
+            Row(
+              children: [
+                Expanded(
+                  child: FilledButton.icon(
+                    onPressed: () {
+                      Navigator.pop(ctx);
+                      _openAdd(context);
+                    },
+                    icon: const Icon(Icons.add),
+                    label: const Text('Agregar gasto'),
+                    style: FilledButton.styleFrom(
+                      backgroundColor: NoovaTheme.income,
+                      foregroundColor: Colors.black,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: FilledButton.icon(
+                    onPressed: () {
+                      Navigator.pop(ctx);
+                      _openBudgets(context);
+                    },
+                    icon: const Icon(Icons.savings_outlined),
+                    label: const Text('Presupuesto'),
+                    style: FilledButton.styleFrom(
+                      backgroundColor: NoovaTheme.accent,
+                      foregroundColor: Colors.black,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return GestureDetector(
+      onVerticalDragEnd: (details) {
+        final v = details.primaryVelocity ?? 0;
+        if (v > 250) {
+          _openAdd(context); // swipe down
+        } else if (v < -250) {
+          _openBudgets(context); // swipe up
+        }
+      },
+      child: Card(
+        child: InkWell(
+          borderRadius: BorderRadius.circular(12),
+          onTap: () => _openDetail(context),
+          child: Padding(
+            padding: const EdgeInsets.all(14),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Expanded(
+                      child: Text(spend.parent.name,
+                          style: const TextStyle(
+                              fontSize: 15, fontWeight: FontWeight.w600)),
+                    ),
+                    Text(MoneyFormat.format(spend.total),
+                        style: const TextStyle(
+                            fontSize: 15, fontWeight: FontWeight.bold)),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(4),
+                  child: LinearProgressIndicator(
+                    value: _fraction,
+                    minHeight: 8,
+                    backgroundColor:
+                        Theme.of(context).colorScheme.surfaceContainerHighest,
+                    color: NoovaTheme.expense,
+                  ),
+                ),
+                if (spend.hasBudget) ...[
+                  const SizedBox(height: 8),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        'Presupuesto: ${MoneyFormat.format(spend.budget)}',
+                        style: const TextStyle(
+                            fontSize: 11, color: NoovaTheme.textSecondary),
+                      ),
+                      Text(
+                        '${spend.percentUsed}%',
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.bold,
+                          color: spend.percentUsed >= 100
+                              ? NoovaTheme.expense
+                              : spend.percentUsed >= 80
+                                  ? NoovaTheme.warning
+                                  : NoovaTheme.income,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 4),
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(3),
+                    child: LinearProgressIndicator(
+                      value: (spend.percentUsed / 100).clamp(0.0, 1.0),
+                      minHeight: 5,
+                      backgroundColor:
+                          Theme.of(context).colorScheme.surfaceContainerHighest,
+                      color: spend.percentUsed >= 100
+                          ? NoovaTheme.expense
+                          : spend.percentUsed >= 80
+                              ? NoovaTheme.warning
+                              : NoovaTheme.accent,
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _ChildRow extends StatelessWidget {
+  final ChildSpend child;
+  const _ChildRow({required this.child});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 6),
+      child: Row(
+        children: [
+          Expanded(child: Text(child.category.name)),
+          Text(MoneyFormat.format(child.spent),
+              style: const TextStyle(fontWeight: FontWeight.w600)),
+          if (child.budget > Decimal.zero) ...[
+            const SizedBox(width: 8),
+            Text(' / ${MoneyFormat.format(child.budget)}',
+                style: const TextStyle(
+                    fontSize: 12, color: NoovaTheme.textSecondary)),
+          ],
+        ],
+      ),
+    );
+  }
+}

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 
-import '../../core/theme.dart';
 import '../../data/models/category.dart';
 import '../../data/models/transaction.dart';
 import '../../data/providers.dart';
@@ -42,7 +41,7 @@ class CategorySelector extends ConsumerWidget {
           return DropdownButtonFormField<int>(
             value: categories.any((c) => c.id == selectedId) ? selectedId : null,
             hint: const Text('Categoría'),
-            dropdownColor: NoovaTheme.surface,
+            dropdownColor: Theme.of(context).colorScheme.surface,
             items: categories
                 .map((c) => DropdownMenuItem(
                       value: c.id,

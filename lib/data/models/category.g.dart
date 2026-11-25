@@ -27,28 +27,38 @@ const CategorySchema = CollectionSchema(
       name: r'isActive',
       type: IsarType.bool,
     ),
-    r'isRecurring': PropertySchema(
+    r'isGroup': PropertySchema(
       id: 2,
+      name: r'isGroup',
+      type: IsarType.bool,
+    ),
+    r'isRecurring': PropertySchema(
+      id: 3,
       name: r'isRecurring',
       type: IsarType.bool,
     ),
     r'isVariable': PropertySchema(
-      id: 3,
+      id: 4,
       name: r'isVariable',
       type: IsarType.bool,
     ),
     r'name': PropertySchema(
-      id: 4,
+      id: 5,
       name: r'name',
       type: IsarType.string,
     ),
     r'order': PropertySchema(
-      id: 5,
+      id: 6,
       name: r'order',
       type: IsarType.long,
     ),
+    r'parentId': PropertySchema(
+      id: 7,
+      name: r'parentId',
+      type: IsarType.long,
+    ),
     r'type': PropertySchema(
-      id: 6,
+      id: 8,
       name: r'type',
       type: IsarType.string,
       enumMap: _CategorytypeEnumValueMap,
@@ -70,6 +80,19 @@ const CategorySchema = CollectionSchema(
           name: r'importKey',
           type: IndexType.hash,
           caseSensitive: true,
+        )
+      ],
+    ),
+    r'parentId': IndexSchema(
+      id: -809199838039056779,
+      name: r'parentId',
+      unique: false,
+      replace: false,
+      properties: [
+        IndexPropertySchema(
+          name: r'parentId',
+          type: IndexType.value,
+          caseSensitive: false,
         )
       ],
     )
@@ -107,11 +130,13 @@ void _categorySerialize(
 ) {
   writer.writeString(offsets[0], object.importKey);
   writer.writeBool(offsets[1], object.isActive);
-  writer.writeBool(offsets[2], object.isRecurring);
-  writer.writeBool(offsets[3], object.isVariable);
-  writer.writeString(offsets[4], object.name);
-  writer.writeLong(offsets[5], object.order);
-  writer.writeString(offsets[6], object.type.name);
+  writer.writeBool(offsets[2], object.isGroup);
+  writer.writeBool(offsets[3], object.isRecurring);
+  writer.writeBool(offsets[4], object.isVariable);
+  writer.writeString(offsets[5], object.name);
+  writer.writeLong(offsets[6], object.order);
+  writer.writeLong(offsets[7], object.parentId);
+  writer.writeString(offsets[8], object.type.name);
 }
 
 Category _categoryDeserialize(
@@ -123,11 +148,13 @@ Category _categoryDeserialize(
   final object = Category(
     importKey: reader.readStringOrNull(offsets[0]),
     isActive: reader.readBoolOrNull(offsets[1]) ?? true,
-    isRecurring: reader.readBoolOrNull(offsets[2]) ?? false,
-    isVariable: reader.readBoolOrNull(offsets[3]) ?? false,
-    name: reader.readString(offsets[4]),
-    order: reader.readLongOrNull(offsets[5]) ?? 0,
-    type: _CategorytypeValueEnumMap[reader.readStringOrNull(offsets[6])] ??
+    isGroup: reader.readBoolOrNull(offsets[2]) ?? false,
+    isRecurring: reader.readBoolOrNull(offsets[3]) ?? false,
+    isVariable: reader.readBoolOrNull(offsets[4]) ?? false,
+    name: reader.readString(offsets[5]),
+    order: reader.readLongOrNull(offsets[6]) ?? 0,
+    parentId: reader.readLongOrNull(offsets[7]),
+    type: _CategorytypeValueEnumMap[reader.readStringOrNull(offsets[8])] ??
         TransactionType.income,
   );
   object.id = id;
@@ -150,10 +177,14 @@ P _categoryDeserializeProp<P>(
     case 3:
       return (reader.readBoolOrNull(offset) ?? false) as P;
     case 4:
-      return (reader.readString(offset)) as P;
+      return (reader.readBoolOrNull(offset) ?? false) as P;
     case 5:
-      return (reader.readLongOrNull(offset) ?? 0) as P;
+      return (reader.readString(offset)) as P;
     case 6:
+      return (reader.readLongOrNull(offset) ?? 0) as P;
+    case 7:
+      return (reader.readLongOrNull(offset)) as P;
+    case 8:
       return (_CategorytypeValueEnumMap[reader.readStringOrNull(offset)] ??
           TransactionType.income) as P;
     default:
@@ -186,6 +217,14 @@ extension CategoryQueryWhereSort on QueryBuilder<Category, Category, QWhere> {
   QueryBuilder<Category, Category, QAfterWhere> anyId() {
     return QueryBuilder.apply(this, (query) {
       return query.addWhereClause(const IdWhereClause.any());
+    });
+  }
+
+  QueryBuilder<Category, Category, QAfterWhere> anyParentId() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(
+        const IndexWhereClause.any(indexName: r'parentId'),
+      );
     });
   }
 }
@@ -318,6 +357,116 @@ extension CategoryQueryWhere on QueryBuilder<Category, Category, QWhereClause> {
               includeUpper: false,
             ));
       }
+    });
+  }
+
+  QueryBuilder<Category, Category, QAfterWhereClause> parentIdIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(IndexWhereClause.equalTo(
+        indexName: r'parentId',
+        value: [null],
+      ));
+    });
+  }
+
+  QueryBuilder<Category, Category, QAfterWhereClause> parentIdIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(IndexWhereClause.between(
+        indexName: r'parentId',
+        lower: [null],
+        includeLower: false,
+        upper: [],
+      ));
+    });
+  }
+
+  QueryBuilder<Category, Category, QAfterWhereClause> parentIdEqualTo(
+      int? parentId) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(IndexWhereClause.equalTo(
+        indexName: r'parentId',
+        value: [parentId],
+      ));
+    });
+  }
+
+  QueryBuilder<Category, Category, QAfterWhereClause> parentIdNotEqualTo(
+      int? parentId) {
+    return QueryBuilder.apply(this, (query) {
+      if (query.whereSort == Sort.asc) {
+        return query
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'parentId',
+              lower: [],
+              upper: [parentId],
+              includeUpper: false,
+            ))
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'parentId',
+              lower: [parentId],
+              includeLower: false,
+              upper: [],
+            ));
+      } else {
+        return query
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'parentId',
+              lower: [parentId],
+              includeLower: false,
+              upper: [],
+            ))
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'parentId',
+              lower: [],
+              upper: [parentId],
+              includeUpper: false,
+            ));
+      }
+    });
+  }
+
+  QueryBuilder<Category, Category, QAfterWhereClause> parentIdGreaterThan(
+    int? parentId, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(IndexWhereClause.between(
+        indexName: r'parentId',
+        lower: [parentId],
+        includeLower: include,
+        upper: [],
+      ));
+    });
+  }
+
+  QueryBuilder<Category, Category, QAfterWhereClause> parentIdLessThan(
+    int? parentId, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(IndexWhereClause.between(
+        indexName: r'parentId',
+        lower: [],
+        upper: [parentId],
+        includeUpper: include,
+      ));
+    });
+  }
+
+  QueryBuilder<Category, Category, QAfterWhereClause> parentIdBetween(
+    int? lowerParentId,
+    int? upperParentId, {
+    bool includeLower = true,
+    bool includeUpper = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(IndexWhereClause.between(
+        indexName: r'parentId',
+        lower: [lowerParentId],
+        includeLower: includeLower,
+        upper: [upperParentId],
+        includeUpper: includeUpper,
+      ));
     });
   }
 }
@@ -533,6 +682,16 @@ extension CategoryQueryFilter
     });
   }
 
+  QueryBuilder<Category, Category, QAfterFilterCondition> isGroupEqualTo(
+      bool value) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'isGroup',
+        value: value,
+      ));
+    });
+  }
+
   QueryBuilder<Category, Category, QAfterFilterCondition> isRecurringEqualTo(
       bool value) {
     return QueryBuilder.apply(this, (query) {
@@ -736,6 +895,75 @@ extension CategoryQueryFilter
     });
   }
 
+  QueryBuilder<Category, Category, QAfterFilterCondition> parentIdIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNull(
+        property: r'parentId',
+      ));
+    });
+  }
+
+  QueryBuilder<Category, Category, QAfterFilterCondition> parentIdIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNotNull(
+        property: r'parentId',
+      ));
+    });
+  }
+
+  QueryBuilder<Category, Category, QAfterFilterCondition> parentIdEqualTo(
+      int? value) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'parentId',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<Category, Category, QAfterFilterCondition> parentIdGreaterThan(
+    int? value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'parentId',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<Category, Category, QAfterFilterCondition> parentIdLessThan(
+    int? value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'parentId',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<Category, Category, QAfterFilterCondition> parentIdBetween(
+    int? lower,
+    int? upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'parentId',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+      ));
+    });
+  }
+
   QueryBuilder<Category, Category, QAfterFilterCondition> typeEqualTo(
     TransactionType value, {
     bool caseSensitive = true,
@@ -898,6 +1126,18 @@ extension CategoryQuerySortBy on QueryBuilder<Category, Category, QSortBy> {
     });
   }
 
+  QueryBuilder<Category, Category, QAfterSortBy> sortByIsGroup() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'isGroup', Sort.asc);
+    });
+  }
+
+  QueryBuilder<Category, Category, QAfterSortBy> sortByIsGroupDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'isGroup', Sort.desc);
+    });
+  }
+
   QueryBuilder<Category, Category, QAfterSortBy> sortByIsRecurring() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'isRecurring', Sort.asc);
@@ -943,6 +1183,18 @@ extension CategoryQuerySortBy on QueryBuilder<Category, Category, QSortBy> {
   QueryBuilder<Category, Category, QAfterSortBy> sortByOrderDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'order', Sort.desc);
+    });
+  }
+
+  QueryBuilder<Category, Category, QAfterSortBy> sortByParentId() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'parentId', Sort.asc);
+    });
+  }
+
+  QueryBuilder<Category, Category, QAfterSortBy> sortByParentIdDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'parentId', Sort.desc);
     });
   }
 
@@ -997,6 +1249,18 @@ extension CategoryQuerySortThenBy
     });
   }
 
+  QueryBuilder<Category, Category, QAfterSortBy> thenByIsGroup() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'isGroup', Sort.asc);
+    });
+  }
+
+  QueryBuilder<Category, Category, QAfterSortBy> thenByIsGroupDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'isGroup', Sort.desc);
+    });
+  }
+
   QueryBuilder<Category, Category, QAfterSortBy> thenByIsRecurring() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'isRecurring', Sort.asc);
@@ -1045,6 +1309,18 @@ extension CategoryQuerySortThenBy
     });
   }
 
+  QueryBuilder<Category, Category, QAfterSortBy> thenByParentId() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'parentId', Sort.asc);
+    });
+  }
+
+  QueryBuilder<Category, Category, QAfterSortBy> thenByParentIdDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'parentId', Sort.desc);
+    });
+  }
+
   QueryBuilder<Category, Category, QAfterSortBy> thenByType() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'type', Sort.asc);
@@ -1073,6 +1349,12 @@ extension CategoryQueryWhereDistinct
     });
   }
 
+  QueryBuilder<Category, Category, QDistinct> distinctByIsGroup() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'isGroup');
+    });
+  }
+
   QueryBuilder<Category, Category, QDistinct> distinctByIsRecurring() {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'isRecurring');
@@ -1095,6 +1377,12 @@ extension CategoryQueryWhereDistinct
   QueryBuilder<Category, Category, QDistinct> distinctByOrder() {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'order');
+    });
+  }
+
+  QueryBuilder<Category, Category, QDistinct> distinctByParentId() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'parentId');
     });
   }
 
@@ -1126,6 +1414,12 @@ extension CategoryQueryProperty
     });
   }
 
+  QueryBuilder<Category, bool, QQueryOperations> isGroupProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'isGroup');
+    });
+  }
+
   QueryBuilder<Category, bool, QQueryOperations> isRecurringProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'isRecurring');
@@ -1147,6 +1441,12 @@ extension CategoryQueryProperty
   QueryBuilder<Category, int, QQueryOperations> orderProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'order');
+    });
+  }
+
+  QueryBuilder<Category, int?, QQueryOperations> parentIdProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'parentId');
     });
   }
 

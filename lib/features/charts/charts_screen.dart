@@ -103,7 +103,7 @@ class _ExpenseBarChart extends ConsumerWidget {
                         value: max == Decimal.zero
                             ? 0
                             : (e.value / max).toDouble(),
-                        backgroundColor: NoovaTheme.surface,
+                        backgroundColor: Theme.of(context).colorScheme.surfaceContainerHighest,
                         color: NoovaTheme.expense,
                         minHeight: 6,
                         borderRadius: BorderRadius.circular(3),
@@ -156,7 +156,7 @@ class _SaldoLineChart extends StatelessWidget {
                 drawVerticalLine: false,
                 horizontalInterval: range / 5,
                 getDrawingHorizontalLine: (v) =>
-                    const FlLine(color: NoovaTheme.surface, strokeWidth: 1),
+                    FlLine(color: Theme.of(context).dividerColor, strokeWidth: 1),
               ),
               titlesData: FlTitlesData(
                 leftTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),

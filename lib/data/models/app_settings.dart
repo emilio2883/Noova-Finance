@@ -22,6 +22,9 @@ class AppSettings {
 
   String defaultCurrency;
 
+  /// 'dark' | 'light'
+  String themeMode;
+
   /// Has historical Excel data been imported
   bool isImported;
 
@@ -34,6 +37,7 @@ class AppSettings {
     this.reminderHour = 20,
     this.reminderMinute = 0,
     this.defaultCurrency = 'USD',
+    this.themeMode = 'dark',
     this.isImported = false,
     this.lastExportDate,
   });

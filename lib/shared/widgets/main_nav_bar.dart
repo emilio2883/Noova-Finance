@@ -19,7 +19,7 @@ class MainNavBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return NavigationBar(
-      backgroundColor: NoovaTheme.surface,
+      backgroundColor: Theme.of(context).colorScheme.surface,
       selectedIndex: _index,
       indicatorColor: NoovaTheme.accent.withValues(alpha: 0.15),
       onDestinationSelected: (i) {

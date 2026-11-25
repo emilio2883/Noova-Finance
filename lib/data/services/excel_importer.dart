@@ -2,6 +2,7 @@ import 'package:decimal/decimal.dart';
 import 'package:excel/excel.dart' as x;
 
 import '../../core/utils/decimal_utils.dart';
+import '../models/category.dart';
 import '../models/transaction.dart';
 import '../repositories/category_repo.dart';
 import '../repositories/transaction_repo.dart';
@@ -78,11 +79,39 @@ class ExcelImporter {
         sheetIndex++;
         onSheetDone?.call(sheetIndex, sheetNames.length);
       }
+      await _ensureOpeningBalance(result);
       result.success = true;
     } catch (e) {
       result.error = e.toString();
     }
     return result;
+  }
+
+  /// Creates a one-time opening-balance transaction so the historical saldo
+  /// matches the Excel. Uses a hidden system category + idempotent hash.
+  Future<void> _ensureOpeningBalance(ImportResult result) async {
+    if (result.openingBalance == Decimal.zero) return;
+    const hash = 'OPENING|initial';
+    if (await _transactionRepo.existsByImportHash(hash)) return;
+
+    var cat = await _categoryRepo.getByImportKey('__saldo_inicial__');
+    final catId = cat?.id ??
+        await _categoryRepo.insert(Category(
+          name: 'Saldo Inicial',
+          type: TransactionType.income,
+          isActive: false,
+          importKey: '__saldo_inicial__',
+          order: 0,
+        ));
+
+    await _transactionRepo.insert(Transaction(
+      date: DateTime(2000, 1, 1),
+      amountBps: DecimalUtils.toBps(result.openingBalance),
+      type: TransactionType.income,
+      categoryId: catId,
+      description: 'Saldo inicial (importado del Excel)',
+      importHash: hash,
+    ));
   }
 
   Future<void> _importSheet(

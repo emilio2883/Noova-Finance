@@ -9,6 +9,35 @@ rootProject.buildDir = "../build"
 subprojects {
     project.buildDir = "${rootProject.buildDir}/${project.name}"
 }
+
+// AGP 8 requires a namespace in every Android module, and legacy plugins
+// (isar_flutter_libs 3.1.0) compile against an old compileSdk that lacks
+// android:attr/lStar (API 31+). Inject namespace from the manifest and
+// force compileSdk 34 on plugin subprojects. MUST be registered BEFORE
+// the evaluationDependsOn block below. The :app module is configured by
+// Flutter's own template and must not be touched.
+subprojects {
+    afterEvaluate { project ->
+        if (project.name == 'app') return
+        if (!project.hasProperty('android')) return
+        if (project.android.namespace == null) {
+            def manifest = new XmlSlurper().parse(
+                file(project.android.sourceSets.main.manifest.srcFile))
+            project.android.namespace = manifest.@package.toString()
+        }
+        def current = project.android.compileSdkVersion
+        def ver = null
+        if (current instanceof Integer) {
+            ver = current
+        } else if (current instanceof String && current.contains('-')) {
+            ver = current.split('-')[-1].toInteger()
+        }
+        if (ver == null || ver < 34) {
+            project.android.compileSdk = 34
+        }
+    }
+}
+
 subprojects {
     project.evaluationDependsOn(":app")
 }

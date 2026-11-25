@@ -23,10 +23,10 @@ description: "Task list for Noova Finance MVP implementation"
 
 **Purpose**: Flutter project initialization and basic structure
 
-- [ ] T001 Initialize Flutter project with `flutter create noova_finance` and configure pubspec.yaml with all dependencies (riverpod, isar, fl_chart, excel, syncfusion_flutter_xlsio, local_auth, flutter_local_notifications, flutter_secure_storage, intl, decimal, file_picker)
-- [ ] T002 [P] Configure dark theme in lib/core/theme.dart (background #1A1A2E, card #16213E, accent green #00E676 for income, accent red #FF5252 for expense, text #E0E0E0)
-- [ ] T003 [P] Configure GoRouter navigation in lib/core/router.dart with routes: /lock, /dashboard, /quincenal, /charts, /budgets, /categories, /import, /settings
-- [ ] T004 [P] Create utility files: lib/core/utils/decimal_utils.dart, date_utils.dart, money_format.dart
+- [x] T001 Initialize Flutter project with `flutter create noova_finance` and configure pubspec.yaml with all dependencies (riverpod, isar, fl_chart, excel, syncfusion_flutter_xlsio, local_auth, flutter_local_notifications, flutter_secure_storage, intl, decimal, file_picker)
+- [x] T002 [P] Configure dark theme in lib/core/theme.dart (background #1A1A2E, card #16213E, accent green #00E676 for income, accent red #FF5252 for expense, text #E0E0E0)
+- [x] T003 [P] Configure GoRouter navigation in lib/core/router.dart with routes: /lock, /dashboard, /quincenal, /charts, /budgets, /categories, /import, /settings
+- [x] T004 [P] Create utility files: lib/core/utils/decimal_utils.dart, date_utils.dart, money_format.dart
 
 **Checkpoint**: Flutter project compiles with `flutter analyze` passing
 
@@ -38,19 +38,19 @@ description: "Task list for Noova Finance MVP implementation"
 
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete
 
-- [ ] T005 Setup Isar database instance in lib/data/database.dart with all 5 collections (Transaction, Category, RecurringRule, Budget, AppSettings)
-- [ ] T006 [P] [US-all] Create Category model in lib/data/models/category.dart per data-model.md
-- [ ] T007 [P] [US-all] Create Transaction model in lib/data/models/transaction.dart per data-model.md
-- [ ] T008 [P] [US-all] Create RecurringRule model in lib/data/models/recurring_rule.dart per data-model.md
-- [ ] T009 [P] [US-all] Create Budget model in lib/data/models/budget.dart per data-model.md
-- [ ] T010 [P] [US-all] Create AppSettings model in lib/data/models/app_settings.dart per data-model.md
-- [ ] T011 [P] [US-all] Create CategoryRepository in lib/data/repositories/category_repo.dart (CRUD + seed defaults)
-- [ ] T012 [P] [US-all] Create TransactionRepository in lib/data/repositories/transaction_repo.dart (CRUD + date-range queries + saldo calc)
-- [ ] T013 [P] [US-all] Create RecurringRepository in lib/data/repositories/recurring_repo.dart (CRUD + find due rules)
-- [ ] T014 [P] [US-all] Create BudgetRepository in lib/data/repositories/budget_repo.dart (CRUD + find by category)
-- [ ] T015 [P] [US-all] Create SettingsRepository in lib/data/repositories/settings_repo.dart (singleton get/update)
-- [ ] T016 Seed default categories on first launch using the 26 categories from data-model.md
-- [ ] T017 [P] [US-all] Create SaldoCalculator in lib/data/services/saldo_calculator.dart (saldo, utilidad, quincena grouping)
+- [x] T005 Setup Isar database instance in lib/data/database.dart with all 5 collections (Transaction, Category, RecurringRule, Budget, AppSettings)
+- [x] T006 [P] [US-all] Create Category model in lib/data/models/category.dart per data-model.md
+- [x] T007 [P] [US-all] Create Transaction model in lib/data/models/transaction.dart per data-model.md
+- [x] T008 [P] [US-all] Create RecurringRule model in lib/data/models/recurring_rule.dart per data-model.md
+- [x] T009 [P] [US-all] Create Budget model in lib/data/models/budget.dart per data-model.md
+- [x] T010 [P] [US-all] Create AppSettings model in lib/data/models/app_settings.dart per data-model.md
+- [x] T011 [P] [US-all] Create CategoryRepository in lib/data/repositories/category_repo.dart (CRUD + seed defaults)
+- [x] T012 [P] [US-all] Create TransactionRepository in lib/data/repositories/transaction_repo.dart (CRUD + date-range queries + saldo calc)
+- [x] T013 [P] [US-all] Create RecurringRepository in lib/data/repositories/recurring_repo.dart (CRUD + find due rules)
+- [x] T014 [P] [US-all] Create BudgetRepository in lib/data/repositories/budget_repo.dart (CRUD + find by category)
+- [x] T015 [P] [US-all] Create SettingsRepository in lib/data/repositories/settings_repo.dart (singleton get/update)
+- [x] T016 Seed default categories on first launch using the 26 categories from data-model.md
+- [x] T017 [P] [US-all] Create SaldoCalculator in lib/data/services/saldo_calculator.dart (saldo, utilidad, quincena grouping)
 
 **Checkpoint**: Data layer ready — all models, repos, and services tested and passing
 
@@ -64,16 +64,16 @@ description: "Task list for Noova Finance MVP implementation"
 
 ### Tests for User Story 1
 
-- [ ] T018 [P] [US1] Unit test for TransactionRepository.insert in test/data/repositories/transaction_repo_test.dart
-- [ ] T019 [P] [US1] Widget test for QuickAddModal in test/features/quick_add_test.dart
+- [x] T018 [P] [US1] Unit test for TransactionRepository.insert in test/data/repositories/transaction_repo_test.dart
+- [x] T019 [P] [US1] Widget test for QuickAddModal in test/features/quick_add_test.dart
 
 ### Implementation for User Story 1
 
-- [ ] T020 [P] [US1] Create shared AmountInput widget in lib/shared/widgets/amount_input.dart (numeric keypad, decimal support)
-- [ ] T021 [P] [US1] Create shared CategorySelector widget in lib/shared/widgets/category_selector.dart (dropdown filtered by type)
-- [ ] T022 [P] [US1] Create shared DatePickerField widget in lib/shared/widgets/date_picker_field.dart (defaults to today)
-- [ ] T023 [US1] Create QuickAddModal in lib/features/transaction/quick_add_modal.dart (amount → category → date → save, income/expense toggle)
-- [ ] T024 [US1] Create TransactionProvider in lib/features/transaction/providers/transaction_provider.dart (Riverpod provider for insert/delete/update)
+- [x] T020 [P] [US1] Create shared AmountInput widget in lib/shared/widgets/amount_input.dart (numeric keypad, decimal support)
+- [x] T021 [P] [US1] Create shared CategorySelector widget in lib/shared/widgets/category_selector.dart (dropdown filtered by type)
+- [x] T022 [P] [US1] Create shared DatePickerField widget in lib/shared/widgets/date_picker_field.dart (defaults to today)
+- [x] T023 [US1] Create QuickAddModal in lib/features/transaction/quick_add_modal.dart (amount → category → date → save, income/expense toggle)
+- [x] T024 [US1] Create TransactionProvider in lib/features/transaction/providers/transaction_provider.dart (Riverpod provider for insert/delete/update)
 
 **Checkpoint**: User can register a transaction and it persists in Isar
 
@@ -87,13 +87,13 @@ description: "Task list for Noova Finance MVP implementation"
 
 ### Tests for User Story 2
 
-- [ ] T025 [P] [US2] Unit test for ExcelImporter.parseSheet in test/data/services/excel_importer_test.dart (parse Y26 sheet, verify category names and amounts)
-- [ ] T026 [P] [US2] Unit test for import idempotency (import twice → no duplicates)
+- [x] T025 [P] [US2] Unit test for ExcelImporter.parseSheet in test/data/services/excel_importer_test.dart (parse Y26 sheet, verify category names and amounts)
+- [x] T026 [P] [US2] Unit test for import idempotency (import twice → no duplicates)
 
 ### Implementation for User Story 2
 
-- [ ] T027 [P] [US2] Create ExcelImporter service in lib/data/services/excel_importer.dart (read .xlsx, parse sheets by name Y24/Y25/Y26, map rows to categories, extract quincena columns, generate importHash per transaction)
-- [ ] T028 [US2] Create ImportScreen in lib/features/import/import_screen.dart (file picker, preview mapping, confirm, progress indicator, success/error states)
+- [x] T027 [P] [US2] Create ExcelImporter service in lib/data/services/excel_importer.dart (read .xlsx, parse sheets by name Y24/Y25/Y26, map rows to categories, extract quincena columns, generate importHash per transaction)
+- [x] T028 [US2] Create ImportScreen in lib/features/import/import_screen.dart (file picker, preview mapping, confirm, progress indicator, success/error states)
 
 **Checkpoint**: Full Excel import works — 2+ years of data loaded
 
@@ -107,17 +107,17 @@ description: "Task list for Noova Finance MVP implementation"
 
 ### Tests for User Story 3
 
-- [ ] T029 [P] [US3] Unit test for SaldoCalculator in test/data/services/saldo_calculator_test.dart (verify saldo = sum of all txns, utilidad = ingresos - gastos)
-- [ ] T030 [P] [US3] Widget test for DashboardScreen in test/features/dashboard_test.dart
+- [x] T029 [P] [US3] Unit test for SaldoCalculator in test/data/services/saldo_calculator_test.dart (verify saldo = sum of all txns, utilidad = ingresos - gastos)
+- [x] T030 [P] [US3] Widget test for DashboardScreen in test/features/dashboard_test.dart
 
 ### Implementation for User Story 3
 
-- [ ] T031 [P] [US3] Create SaldoCard widget in lib/features/dashboard/widgets/saldo_card.dart (current saldo, formatted USD)
-- [ ] T032 [P] [US3] Create UtilidadCard widget in lib/features/dashboard/widgets/utilidad_card.dart (monthly ingresos, gastos, net, color-coded)
-- [ ] T033 [P] [US3] Create RecentTransactions widget in lib/features/dashboard/widgets/recent_transactions.dart (last 15 txns, tap to edit)
-- [ ] T034 [P] [US3] Create QuickAddButton widget in lib/features/dashboard/widgets/quick_add_button.dart (FAB with "+" icon, opens QuickAddModal)
-- [ ] T035 [US3] Create DashboardProvider in lib/features/dashboard/providers/dashboard_provider.dart (Riverpod: saldo, utilidad, recent txns — recomputes on new txn)
-- [ ] T036 [US3] Create DashboardScreen in lib/features/dashboard/dashboard_screen.dart (compose all widgets, bottom nav bar)
+- [x] T031 [P] [US3] Create SaldoCard widget in lib/features/dashboard/widgets/saldo_card.dart (current saldo, formatted USD)
+- [x] T032 [P] [US3] Create UtilidadCard widget in lib/features/dashboard/widgets/utilidad_card.dart (monthly ingresos, gastos, net, color-coded)
+- [x] T033 [P] [US3] Create RecentTransactions widget in lib/features/dashboard/widgets/recent_transactions.dart (last 15 txns, tap to edit)
+- [x] T034 [P] [US3] Create QuickAddButton widget in lib/features/dashboard/widgets/quick_add_button.dart (FAB with "+" icon, opens QuickAddModal)
+- [x] T035 [US3] Create DashboardProvider in lib/features/dashboard/providers/dashboard_provider.dart (Riverpod: saldo, utilidad, recent txns — recomputes on new txn)
+- [x] T036 [US3] Create DashboardScreen in lib/features/dashboard/dashboard_screen.dart (compose all widgets, bottom nav bar)
 
 **Checkpoint**: Dashboard fully functional — MVP (US1+US2+US3) is usable
 
@@ -131,13 +131,13 @@ description: "Task list for Noova Finance MVP implementation"
 
 ### Tests for User Story 4
 
-- [ ] T037 [P] [US4] Unit test for RecurringGenerator in test/data/services/recurring_generator_test.dart
+- [x] T037 [P] [US4] Unit test for RecurringGenerator in test/data/services/recurring_generator_test.dart
 
 ### Implementation for User Story 4
 
-- [ ] T038 [US4] Create RecurringGenerator service in lib/data/services/recurring_generator.dart (find due rules, generate transactions, update lastGenerated)
-- [ ] T039 [US4] Hook RecurringGenerator into app startup (run on app launch, generate any overdue recurring txns)
-- [ ] T040 [US4] Add recurring rule management UI in lib/features/settings/ (create/edit/deactivate recurring rules)
+- [x] T038 [US4] Create RecurringGenerator service in lib/data/services/recurring_generator.dart (find due rules, generate transactions, update lastGenerated)
+- [x] T039 [US4] Hook RecurringGenerator into app startup (run on app launch, generate any overdue recurring txns)
+- [x] T040 [US4] Add recurring rule management UI in lib/features/settings/ (create/edit/deactivate recurring rules)
 
 **Checkpoint**: Recurring expenses auto-generate correctly
 
@@ -151,8 +151,8 @@ description: "Task list for Noova Finance MVP implementation"
 
 ### Implementation for User Story 5
 
-- [ ] T041 [P] [US5] Create CategoryRow widget in lib/features/quincenal/widgets/category_row.dart (category name, amount, tap for detail)
-- [ ] T042 [US5] Create QuincenalScreen in lib/features/quincenal/quincenal_screen.dart (date selector for year+quincena, list of category rows, totals footer)
+- [x] T041 [P] [US5] Create CategoryRow widget in lib/features/quincenal/widgets/category_row.dart (category name, amount, tap for detail)
+- [x] T042 [US5] Create QuincenalScreen in lib/features/quincenal/quincenal_screen.dart (date selector for year+quincena, list of category rows, totals footer)
 
 **Checkpoint**: Quincenal view shows data like the Excel
 
@@ -166,9 +166,9 @@ description: "Task list for Noova Finance MVP implementation"
 
 ### Implementation for User Story 6
 
-- [ ] T043 [P] [US6] Create ExpenseBarChart widget in lib/features/charts/widgets/expense_bar_chart.dart (fl_chart BarChart, categories sorted desc, percentages)
-- [ ] T044 [P] [US6] Create SaldoLineChart widget in lib/features/charts/widgets/saldo_line_chart.dart (fl_chart LineChart, 12+ months of saldo)
-- [ ] T045 [US6] Create ChartsScreen in lib/features/charts/charts_screen.dart (compose both charts, month selector)
+- [x] T043 [P] [US6] Create ExpenseBarChart widget in lib/features/charts/widgets/expense_bar_chart.dart (fl_chart BarChart, categories sorted desc, percentages)
+- [x] T044 [P] [US6] Create SaldoLineChart widget in lib/features/charts/widgets/saldo_line_chart.dart (fl_chart LineChart, 12+ months of saldo)
+- [x] T045 [US6] Create ChartsScreen in lib/features/charts/charts_screen.dart (compose both charts, month selector)
 
 **Checkpoint**: Charts render with real data
 
@@ -182,14 +182,14 @@ description: "Task list for Noova Finance MVP implementation"
 
 ### Tests for User Story 9
 
-- [ ] T046 [P] [US7] Unit test for BudgetChecker in test/data/services/budget_checker_test.dart
+- [x] T046 [P] [US7] Unit test for BudgetChecker in test/data/services/budget_checker_test.dart
 
 ### Implementation for User Story 7
 
-- [ ] T047 [US7] Create BudgetChecker service in lib/data/services/budget_checker.dart (calculate spent per category, compare to budget, trigger notifications)
-- [ ] T048 [US7] Create BudgetProvider in lib/features/budgets/providers/budget_provider.dart (load budgets, suggest from historical average)
-- [ ] T049 [US7] Create BudgetsScreen in lib/features/budgets/budgets_screen.dart (list variable categories, suggested amounts, edit thresholds, enable/disable)
-- [ ] T050 [US7] Hook BudgetChecker into transaction save flow (after each new expense, check thresholds)
+- [x] T047 [US7] Create BudgetChecker service in lib/data/services/budget_checker.dart (calculate spent per category, compare to budget, trigger notifications)
+- [x] T048 [US7] Create BudgetProvider in lib/features/budgets/providers/budget_provider.dart (load budgets, suggest from historical average)
+- [x] T049 [US7] Create BudgetsScreen in lib/features/budgets/budgets_screen.dart (list variable categories, suggested amounts, edit thresholds, enable/disable)
+- [x] T050 [US7] Hook BudgetChecker into transaction save flow (after each new expense, check thresholds)
 
 **Checkpoint**: Budgets and alerts work
 
@@ -203,13 +203,13 @@ description: "Task list for Noova Finance MVP implementation"
 
 ### Tests for User Story 10
 
-- [ ] T051 [P] [US8] Widget test for LockScreen in test/features/lock_screen_test.dart
+- [x] T051 [P] [US8] Widget test for LockScreen in test/features/lock_screen_test.dart
 
 ### Implementation for User Story 8
 
-- [ ] T052 [US8] Create LockScreen in lib/features/auth/lock_screen.dart (PIN pad 0-9, biometric button, 3-strike cooldown)
-- [ ] T053 [US8] Create PinSetup widget in lib/features/settings/widgets/pin_setup.dart (first-run PIN creation, confirm PIN)
-- [ ] T054 [US8] Store PIN hash in flutter_secure_storage, check on app launch, route to /lock or /dashboard
+- [x] T052 [US8] Create LockScreen in lib/features/auth/lock_screen.dart (PIN pad 0-9, biometric button, 3-strike cooldown)
+- [x] T053 [US8] Create PinSetup widget in lib/features/settings/widgets/pin_setup.dart (first-run PIN creation, confirm PIN)
+- [x] T054 [US8] Store PIN hash in flutter_secure_storage, check on app launch, route to /lock or /dashboard
 
 **Checkpoint**: App requires authentication to access financial data
 
@@ -221,12 +221,12 @@ description: "Task list for Noova Finance MVP implementation"
 
 ### Tests for User Story 11
 
-- [ ] T055 [P] [US9] Unit test for ExcelExporter in test/data/services/excel_exporter_test.dart
+- [x] T055 [P] [US9] Unit test for ExcelExporter in test/data/services/excel_exporter_test.dart
 
 ### Implementation for User Story 9
 
-- [ ] T056 [US9] Create ExcelExporter service in lib/data/services/excel_exporter.dart (query all txns, group by year+quincena, build sheets with syncfusion_flutter_xlsio, save file)
-- [ ] T057 [US9] Add export button in Settings screen (trigger export, share/save file)
+- [x] T056 [US9] Create ExcelExporter service in lib/data/services/excel_exporter.dart (query all txns, group by year+quincena, build sheets with syncfusion_flutter_xlsio, save file)
+- [x] T057 [US9] Add export button in Settings screen (trigger export, share/save file)
 
 **Checkpoint**: Export produces valid .xlsx
 
@@ -238,8 +238,8 @@ description: "Task list for Noova Finance MVP implementation"
 
 ### Implementation for User Story 10
 
-- [ ] T058 [US10] Create CategoriesScreen in lib/features/categories/categories_screen.dart (list, create, rename, hide, drag-to-reorder)
-- [ ] T059 [US10] Add category management to Settings navigation
+- [x] T058 [US10] Create CategoriesScreen in lib/features/categories/categories_screen.dart (list, create, rename, hide, drag-to-reorder)
+- [x] T059 [US10] Add category management to Settings navigation
 
 **Checkpoint**: Categories are fully manageable from the app
 
@@ -251,8 +251,8 @@ description: "Task list for Noova Finance MVP implementation"
 
 ### Implementation for User Story 11
 
-- [ ] T060 [US11] Create ReminderConfig widget in lib/features/settings/widgets/reminder_config.dart (enable/disable, time picker)
-- [ ] T061 [US11] Schedule daily local notification via flutter_local_notifications on settings save
+- [x] T060 [US11] Create ReminderConfig widget in lib/features/settings/widgets/reminder_config.dart (enable/disable, time picker)
+- [x] T061 [US11] Schedule daily local notification via flutter_local_notifications on settings save
 
 **Checkpoint**: Reminders fire at configured time
 
@@ -262,7 +262,7 @@ description: "Task list for Noova Finance MVP implementation"
 
 **Purpose**: Final integration, testing, and validation
 
-- [ ] T062 [P] Create quickstart.md validation scenarios in specs/001-noova-finance-mvp/quickstart.md
+- [x] T062 [P] Create quickstart.md validation scenarios in specs/001-noova-finance-mvp/quickstart.md
 - [ ] T063 Run `flutter analyze` and fix all warnings
 - [ ] T064 Run `flutter test` and ensure all tests pass
 - [ ] T065 Create integration_test/app_test.dart — end-to-end: unlock → register txn → verify dashboard → view quincenal → view charts

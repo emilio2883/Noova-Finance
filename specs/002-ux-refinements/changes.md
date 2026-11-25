@@ -46,3 +46,23 @@ Total: 6 principales + 25 hojas = 31 categorías.
   idempotente por hash `OPENING|initial`.
 - Persistencia: Isar (offline-first), montos como int en diezmilésimas.
 - Tests: 51 pasando; analyze limpio.
+
+
+## v2.1 — Corrección de importación y taxonomía real (archivo TEST)
+
+Tras probar con "NOOVA Estado Financiero - TEST.xlsx":
+
+- **Bug raíz resuelto**: el paquete `excel` no evalúa fórmulas y lee números como
+  fechas → importaba 0 filas. Nuevo `XlsxReader` lee los valores cacheados `<v>`
+  directamente del XML del .xlsx. Verificado: 345 transacciones importadas,
+  saldo inicial 107652.2599 (exacto), 0 filas no reconocidas.
+- **Taxonomía según pestaña "Categorias"**: 8 principales (Ingresos, Impuestos,
+  Casa, Seguro, Alimentos, Carro, Otros, Prestamos) + 26 hojas.
+  Mapeo fila→categoría: IDAAN→Agua IDAAN, Mantenimiento de Casa→Mantenimiento
+  Augusta, Mantenimiento casa de playa→Mantenimiento Lajas, Casa - Augusta/GG→
+  Hipoteca Augusta (Prestamos), QLU MBA-IFARHU→Prestamos.
+- **Importación multi-archivo**: hash por archivo (`archivo|hoja|fila|col`),
+  historial de importaciones (ImportRecord), botón "Volver a Ajustes".
+- **Presupuestos**: cubren todas las subcategorías (no solo variables), así que
+  Casa/Seguro/Impuestos muestran las suyas.
+- **Navegación**: sub-pantallas con `push` para que el botón regreso funcione.

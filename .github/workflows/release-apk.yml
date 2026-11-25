@@ -1,11 +1,10 @@
 name: Release APK
 
-# Se ejecuta al empujar un tag tipo v1.0.0 (o manualmente desde la pestaña Actions).
-# Compila el APK de release, lo firma con tu keystore y lo adjunta a un GitHub Release.
+# Automático: cada push a main compila, sube el versionCode solo y publica
+# un release nuevo. Obtainium en el teléfono lo detecta y actualiza.
 on:
   push:
-    tags:
-      - 'v*'
+    branches: [main]
   workflow_dispatch:
 
 permissions:
@@ -43,15 +42,26 @@ jobs:
           printf 'storePassword=%s\nkeyPassword=%s\nkeyAlias=%s\nstoreFile=upload-keystore.jks\n' \
             "$KEYSTORE_PASSWORD" "$KEY_PASSWORD" "$KEY_ALIAS" > android/key.properties
 
+      - name: Read base version
+        id: ver
+        run: |
+          base=$(grep '^version:' pubspec.yaml | sed 's/version: //; s/+.*//')
+          echo "base=$base" >> "$GITHUB_OUTPUT"
+
       - name: Install dependencies
         run: flutter pub get
 
       - name: Build release APK
-        run: flutter build apk --release
+        run: >
+          flutter build apk --release
+          --build-name=${{ steps.ver.outputs.base }}.${{ github.run_number }}
+          --build-number=${{ github.run_number }}
 
       - name: Publish GitHub Release
         uses: softprops/action-gh-release@v2
         with:
+          tag_name: v${{ steps.ver.outputs.base }}-b${{ github.run_number }}
+          name: "v${{ steps.ver.outputs.base }} (build ${{ github.run_number }})"
           files: build/app/outputs/flutter-apk/app-release.apk
           generate_release_notes: true
           fail_on_unmatched_files: true

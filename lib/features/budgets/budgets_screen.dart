@@ -30,12 +30,11 @@ class BudgetsScreen extends ConsumerWidget {
     final result = <_ParentBudget>[];
     for (final p in principals) {
       final children = await catRepo.getChildren(p.id);
-      final variable = children.where((c) => c.isVariable).toList();
       var total = Decimal.zero;
-      for (final c in variable) {
+      for (final c in children) {
         total += byCat[c.id] ?? Decimal.zero;
       }
-      result.add(_ParentBudget(p, variable, total));
+      result.add(_ParentBudget(p, children, total));
     }
     return result;
   }
@@ -43,7 +42,13 @@ class BudgetsScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Presupuestos')),
+      appBar: AppBar(
+        title: const Text('Presupuestos'),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () => Navigator.of(context).maybePop(),
+        ),
+      ),
       body: FutureBuilder<List<_ParentBudget>>(
         future: _load(ref),
         builder: (context, snapshot) {
@@ -81,7 +86,7 @@ class BudgetsScreen extends ConsumerWidget {
                     title: Text(item.parent.name),
                     subtitle: Text(
                       item.variableChildren.isEmpty
-                          ? 'Sin subcategorías variables'
+                          ? 'Sin subcategorías'
                           : '${item.variableChildren.length} subcategorías · ${MoneyFormat.format(item.total)} por quincena',
                       style: const TextStyle(fontSize: 12),
                     ),

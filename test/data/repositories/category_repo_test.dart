@@ -36,19 +36,19 @@ void main() {
     repo = CategoryRepository(isar);
   });
 
-  test('seedDefaults builds the Y26 hierarchy (6 groups + 25 leaves = 31)', () async {
+  test('seedDefaults builds the Categorias tab tree (8 groups + 26 leaves = 34)', () async {
     await repo.seedDefaults();
     final all = await repo.getAll();
-    expect(all.length, 31);
+    expect(all.length, 34);
     final groups = all.where((c) => c.isGroup).length;
-    expect(groups, 6);
+    expect(groups, 8);
   });
 
   test('seedDefaults is idempotent', () async {
     await repo.seedDefaults();
     await repo.seedDefaults();
     final all = await repo.getAll();
-    expect(all.length, 31);
+    expect(all.length, 34);
   });
 
   test('getChildren returns subcategories of a principal', () async {
@@ -56,8 +56,8 @@ void main() {
     final casa = (await repo.getAll())
         .firstWhere((c) => c.name == 'Casa' && c.isGroup);
     final children = await repo.getChildren(casa.id);
-    expect(children.length, 6);
-    expect(children.map((c) => c.name), contains('IDAAN'));
+    expect(children.length, 4);
+    expect(children.map((c) => c.name), contains('Agua IDAAN'));
   });
 
   test('getActive filters by type and isActive', () async {
@@ -71,7 +71,7 @@ void main() {
     await repo.seedDefaults();
     final cat = await repo.getByImportKey('Casa - Augusta/GG');
     expect(cat, isNotNull);
-    expect(cat!.name, 'Casa - Augusta/GG');
+    expect(cat!.name, 'Hipoteca Augusta');
   });
 
   test('hide deactivates but keeps the record', () async {

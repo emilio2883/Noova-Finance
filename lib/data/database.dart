@@ -4,6 +4,7 @@ import 'package:path_provider/path_provider.dart';
 import 'models/app_settings.dart';
 import 'models/budget.dart';
 import 'models/category.dart';
+import 'models/import_record.dart';
 import 'models/recurring_rule.dart';
 import 'models/transaction.dart';
 
@@ -21,6 +22,7 @@ class AppDatabase {
         RecurringRuleSchema,
         BudgetSchema,
         AppSettingsSchema,
+        ImportRecordSchema,
       ],
       directory: dir.path,
       name: 'noova_finance',

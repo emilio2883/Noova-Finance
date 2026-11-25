@@ -1,11 +1,11 @@
 import 'package:decimal/decimal.dart';
-import 'package:excel/excel.dart' as x;
 
 import '../../core/utils/decimal_utils.dart';
 import '../models/category.dart';
 import '../models/transaction.dart';
 import '../repositories/category_repo.dart';
 import '../repositories/transaction_repo.dart';
+import 'xlsx_reader.dart';
 
 /// Result of an import run.
 class ImportResult {
@@ -17,67 +17,67 @@ class ImportResult {
   String? error;
 }
 
-/// Parses Estado Financiero-2.xlsx (sheets Y24/Y25/Y26) into transactions.
+/// Parses Estado Financiero workbooks into transactions.
 ///
-/// Excel structure (per sheet):
-///   Row 0: month headers (Enero..Diciembre), each spanning 2 columns
-///   Row 1: quincena sub-headers ("1-15", "15-30") x 12
-///   Following rows: category rows. Group/total rows are SUMS of child rows
-///   and MUST be skipped to avoid double-counting.
-///
-/// Idempotent: each cell gets hash "sheet|rowKey|colIndex"; re-import skips
-/// existing hashes (spec FR-027).
+/// Reads cached cell values (XlsxReader) so formulas/date formats are handled.
+/// Idempotent per file: hash "source|sheet|row|col". Group/summary rows are
+/// skipped so totals don't double-count.
 class ExcelImporter {
   final TransactionRepository _transactionRepo;
   final CategoryRepository _categoryRepo;
+
+  /// Prefix (file name) in hashes so different files don't collide.
+  String _source = '';
 
   ExcelImporter(this._transactionRepo, this._categoryRepo);
 
   /// Rows that are group sums, totals, or derived — never imported.
   static const Set<String> _skipRows = {
-    'Saldo Inicial', // handled specially (opening balance)
+    'Saldo Inicial',
+    'Saldo Final',
     'Ingresos',
     'Gastos',
     'Utilidad Neta',
     'Total Ingresos',
     'Total Gastos',
     'Total Gasto NETO',
-    'Impuestos Y Prestamos', // group = ISR + SS + SE
+    'Impuestos', // group (ISR + SS + SE)
+    'Impuestos Y Prestamos', // legacy group name
+    'Prestamos', // group row if present
     'Total Ingreso NETO',
     'Ganancias o Perdida',
     'Ganancia Neta Anual',
     'Salario Mensual',
-    'Casa', // group = Gas + IDAAN + Mant + Augusta/GG + playa + IFARHU
-    'Seguro', // group = Progreso + MAFRE + PALIG + médico padres
-    'Alimentos', // group = Restaurante + Supermercado
-    'Carro', // group = Gasolina + PANAPASS
-    'Otros', // group = Valeria + Lala + Viaje + Médicos + generales
-    'MasMovil', // all zeros
+    'Casa', // group
+    'Seguro', // group
+    'Alimentos', // group
+    'Carro', // group
+    'Otros', // group
+    'MasMovil',
     'Saldo Global TDC',
     'Trip Cost w/o Hotel & AirTicket',
   };
 
-  /// Import the whole workbook. Returns per-sheet results.
   Future<ImportResult> importBytes(
     List<int> bytes, {
+    String? sourceName,
     void Function(int sheet, int totalSheets)? onSheetDone,
   }) async {
+    _source = sourceName ?? '';
     final result = ImportResult();
     try {
-      final excel = x.Excel.decodeBytes(bytes);
-      final sheetNames = excel.tables.keys
+      final sheets = XlsxReader.parse(bytes);
+      final sheetNames = sheets.keys
           .where((k) => RegExp(r'^Y\d{2}$').hasMatch(k))
           .toList()
         ..sort();
 
-      var sheetIndex = 0;
+      var i = 0;
       for (final name in sheetNames) {
         final year = 2000 + int.parse(name.substring(1));
-        final sheet = excel.tables[name];
-        if (sheet == null) continue;
-        await _importSheet(sheet, year, name, result);
-        sheetIndex++;
-        onSheetDone?.call(sheetIndex, sheetNames.length);
+        await _importSheet(sheets[name]!, year, name, result);
+        i++;
+        onSheetDone?.call(i, sheetNames.length);
       }
       await _ensureOpeningBalance(result);
       result.success = true;
@@ -87,14 +87,12 @@ class ExcelImporter {
     return result;
   }
 
-  /// Creates a one-time opening-balance transaction so the historical saldo
-  /// matches the Excel. Uses a hidden system category + idempotent hash.
   Future<void> _ensureOpeningBalance(ImportResult result) async {
     if (result.openingBalance == Decimal.zero) return;
-    const hash = 'OPENING|initial';
+    final hash = 'OPENING|$_source';
     if (await _transactionRepo.existsByImportHash(hash)) return;
 
-    var cat = await _categoryRepo.getByImportKey('__saldo_inicial__');
+    final cat = await _categoryRepo.getByImportKey('__saldo_inicial__');
     final catId = cat?.id ??
         await _categoryRepo.insert(Category(
           name: 'Saldo Inicial',
@@ -109,51 +107,54 @@ class ExcelImporter {
       amountBps: DecimalUtils.toBps(result.openingBalance),
       type: TransactionType.income,
       categoryId: catId,
-      description: 'Saldo inicial (importado del Excel)',
+      description: 'Saldo inicial (importado)',
       importHash: hash,
     ));
   }
 
   Future<void> _importSheet(
-    x.Sheet sheet,
+    Map<int, Map<int, dynamic>> rows,
     int year,
     String sheetName,
     ImportResult result,
   ) async {
-    final rows = sheet.rows;
+    final rowIdx = rows.keys.toList()..sort();
 
-    // 1. Find the quincena header row (contains "1-15")
-    int? quincenaHeaderRow;
-    for (var r = 0; r < rows.length && r < 10; r++) {
-      final cells = rows[r].map((c) => _cellText(c)).toList();
-      if (cells.any((t) => t.contains('1-15'))) {
-        quincenaHeaderRow = r;
+    // 1. Find the quincena header row (a row containing "1-15").
+    int? headerRow;
+    for (final r in rowIdx) {
+      if (r > 10) break;
+      final cells = rows[r]!;
+      final texts = cells.values.map((v) => v?.toString() ?? '');
+      if (texts.any((t) => t.contains('1-15'))) {
+        headerRow = r;
         break;
       }
     }
-    if (quincenaHeaderRow == null) {
-      throw FormatException('Sheet $sheetName: no quincena header row found');
+    if (headerRow == null) {
+      throw FormatException('Sheet $sheetName: no quincena header row');
     }
 
-    // 2. Build column -> (month, quincena) map from the header row
-    final columnMap = <int, (int, int)>{}; // colIndex -> (month, quincena)
-    var occurrence = 0;
-    final headerCells = rows[quincenaHeaderRow];
-    for (var c = 0; c < headerCells.length; c++) {
-      final text = _cellText(headerCells[c]);
+    // 2. Column -> (month, quincena)
+    final columnMap = <int, (int, int)>{};
+    final headerCells = rows[headerRow]!;
+    final cols = headerCells.keys.toList()..sort();
+    var occ = 0;
+    for (final col in cols) {
+      final text = headerCells[col]?.toString() ?? '';
       if (text.contains('1-15')) {
-        columnMap[c] = ((occurrence ~/ 2) + 1, 1);
-        occurrence++;
+        columnMap[col] = ((occ ~/ 2) + 1, 1);
+        occ++;
       } else if (text.contains('15-30')) {
-        columnMap[c] = ((occurrence ~/ 2) + 1, 2);
-        occurrence++;
+        columnMap[col] = ((occ ~/ 2) + 1, 2);
+        occ++;
       }
     }
     if (columnMap.isEmpty) {
-      throw FormatException('Sheet $sheetName: no quincena columns found');
+      throw FormatException('Sheet $sheetName: no quincena columns');
     }
 
-    // 3. Load categories by importKey
+    // 3. Categories by importKey
     final categoriesByKey = <String, int>{};
     for (final cat in await _categoryRepo.getAll()) {
       if (cat.importKey != null) categoriesByKey[cat.importKey!] = cat.id;
@@ -162,17 +163,17 @@ class ExcelImporter {
     final toInsert = <Transaction>[];
 
     // 4. Scan data rows
-    for (var r = quincenaHeaderRow + 1; r < rows.length; r++) {
-      final row = rows[r];
-      if (row.isEmpty) continue;
-      final rowName = _cellText(row.first).trim();
+    for (final r in rowIdx) {
+      if (r <= headerRow) continue;
+      final cells = rows[r]!;
+      if (cells.isEmpty) continue;
+      final rowName = _text(cells[0]);
       if (rowName.isEmpty) continue;
 
-      // Opening balance: first Saldo Inicial value of the earliest sheet
       if (rowName == 'Saldo Inicial') {
-        final firstValue = _firstNumeric(row, columnMap.keys.toList());
-        if (firstValue != null && result.openingBalance == Decimal.zero) {
-          result.openingBalance = DecimalUtils.fromDouble(firstValue);
+        final first = _firstNumeric(cells, columnMap.keys.toList());
+        if (first != null && result.openingBalance == Decimal.zero) {
+          result.openingBalance = DecimalUtils.fromDouble(first);
         }
         continue;
       }
@@ -180,42 +181,33 @@ class ExcelImporter {
 
       final categoryId = categoriesByKey[rowName];
       if (categoryId == null) {
-        if (!result.unknownRows.contains(rowName)) {
-          result.unknownRows.add(rowName);
-        }
+        if (!result.unknownRows.contains(rowName)) result.unknownRows.add(rowName);
         continue;
       }
-
-      // Determine type from the category
       final cat = await _categoryRepo.getById(categoryId);
       if (cat == null) continue;
       final isIncome = cat.type == TransactionType.income;
 
       for (final entry in columnMap.entries) {
         final col = entry.key;
-        if (col >= row.length) continue;
-        final cell = row[col];
-        final value = _numericValue(cell);
+        final value = _num(cells[col]);
         if (value == null || value == 0) continue;
-
         final (month, quincena) = entry.value;
         final day = quincena == 1 ? 1 : 16;
-        final date = DateTime(year, month, day);
         final amountBps = DecimalUtils.toBps(DecimalUtils.fromDouble(value.abs()));
-
-        final hash = '$sheetName|$rowName|$col';
+        final hash = '$_source|$sheetName|$rowName|$col';
         toInsert.add(Transaction(
-          date: date,
+          date: DateTime(year, month, day),
           amountBps: amountBps,
           type: isIncome ? TransactionType.income : TransactionType.expense,
           categoryId: categoryId,
-          description: 'Importado de Excel ($sheetName)',
+          description: 'Importado ($sheetName)',
           importHash: hash,
         ));
       }
     }
 
-    // 5. Filter duplicates (idempotent import) and insert
+    // 5. Insert, skipping duplicates
     for (final t in toInsert) {
       if (t.importHash != null &&
           await _transactionRepo.existsByImportHash(t.importHash!)) {
@@ -227,31 +219,25 @@ class ExcelImporter {
     }
   }
 
-  /// Cell text as trimmed string.
-  String _cellText(x.Data? cell) {
-    if (cell == null || cell.value == null) return '';
-    return cell.value.toString().trim();
-  }
+  String _text(dynamic v) => v == null ? '' : v.toString().trim();
 
-  /// Numeric value of a cell, null if not numeric/empty.
-  double? _numericValue(x.Data? cell) {
-    if (cell == null || cell.value == null) return null;
-    final v = cell.value;
+  double? _num(dynamic v) {
+    if (v == null) return null;
+    if (v is double) return v;
+    if (v is int) return v.toDouble();
     if (v is num) return v.toDouble();
     if (v is String) {
-      final cleaned = v.trim().replaceAll(',', '');
+      final cleaned = v.replaceAll(',', '').trim();
       if (cleaned.isEmpty) return null;
       return double.tryParse(cleaned);
     }
     return null;
   }
 
-  double? _firstNumeric(List<x.Data?> row, List<int> columns) {
-    for (final col in columns) {
-      if (col < row.length) {
-        final v = _numericValue(row[col]);
-        if (v != null) return v;
-      }
+  double? _firstNumeric(Map<int, dynamic> cells, List<int> cols) {
+    for (final col in cols) {
+      final n = _num(cells[col]);
+      if (n != null) return n;
     }
     return null;
   }

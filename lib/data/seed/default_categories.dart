@@ -12,18 +12,16 @@ typedef CategoryDef = ({
   String? parent,
 });
 
-/// Default category tree based on the Y26 sheet of Estado Financiero-2.xlsx.
-/// 2-level hierarchy: 6 expense principals + income/expense leaves.
+/// Default category tree per the "Categorias" tab of NOOVA Estado Financiero.
+/// 8 principals (Ingresos + 7 expense groups) and their leaves.
+/// importKey = the row label used in the Y26 data sheet, so the importer maps
+/// data rows to the right (possibly renamed) category.
 class DefaultCategories {
   static const List<CategoryDef> defs = [
-    // ── Income leaves (top-level) ──
-    (name: 'Salario', type: TransactionType.income, isGroup: false,
-        isVariable: false, isRecurring: true, order: 1, importKey: 'Salario', parent: null),
-    (name: 'Otros Ingresos', type: TransactionType.income, isGroup: false,
-        isVariable: true, isRecurring: false, order: 2, importKey: 'Otros Ingresos', parent: null),
-
-    // ── Expense principals (groups) ──
-    (name: 'Impuestos y Prestamos', type: TransactionType.expense, isGroup: true,
+    // ── Principals ──
+    (name: 'Ingresos', type: TransactionType.income, isGroup: true,
+        isVariable: false, isRecurring: false, order: 1, importKey: null, parent: null),
+    (name: 'Impuestos', type: TransactionType.expense, isGroup: true,
         isVariable: false, isRecurring: false, order: 10, importKey: null, parent: null),
     (name: 'Casa', type: TransactionType.expense, isGroup: true,
         isVariable: false, isRecurring: false, order: 11, importKey: null, parent: null),
@@ -35,63 +33,75 @@ class DefaultCategories {
         isVariable: false, isRecurring: false, order: 14, importKey: null, parent: null),
     (name: 'Otros', type: TransactionType.expense, isGroup: true,
         isVariable: false, isRecurring: false, order: 15, importKey: null, parent: null),
+    (name: 'Prestamos', type: TransactionType.expense, isGroup: true,
+        isVariable: false, isRecurring: false, order: 16, importKey: null, parent: null),
 
-    // ── Impuestos y Prestamos children (fixed) ──
+    // ── Ingresos children ──
+    (name: 'Salario', type: TransactionType.income, isGroup: false,
+        isVariable: false, isRecurring: true, order: 101, importKey: 'Salario', parent: 'Ingresos'),
+    (name: 'Otros Ingresos', type: TransactionType.income, isGroup: false,
+        isVariable: true, isRecurring: false, order: 102, importKey: 'Otros Ingresos', parent: 'Ingresos'),
+
+    // ── Impuestos children ──
     (name: 'Impuesto Sobre la Renta', type: TransactionType.expense, isGroup: false,
-        isVariable: false, isRecurring: true, order: 101, importKey: 'Impuesto Sobre la Renta', parent: 'Impuestos y Prestamos'),
+        isVariable: false, isRecurring: true, order: 110, importKey: 'Impuesto Sobre la Renta', parent: 'Impuestos'),
     (name: 'Seguro Social', type: TransactionType.expense, isGroup: false,
-        isVariable: false, isRecurring: true, order: 102, importKey: 'Seguro Social', parent: 'Impuestos y Prestamos'),
+        isVariable: false, isRecurring: true, order: 111, importKey: 'Seguro Social', parent: 'Impuestos'),
     (name: 'Seguro Educativo', type: TransactionType.expense, isGroup: false,
-        isVariable: false, isRecurring: true, order: 103, importKey: 'Seguro Educativo', parent: 'Impuestos y Prestamos'),
+        isVariable: false, isRecurring: true, order: 112, importKey: 'Seguro Educativo', parent: 'Impuestos'),
 
-    // ── Casa children (fixed) ──
+    // ── Casa children ──
     (name: 'Gas', type: TransactionType.expense, isGroup: false,
-        isVariable: false, isRecurring: true, order: 111, importKey: 'Gas', parent: 'Casa'),
-    (name: 'IDAAN', type: TransactionType.expense, isGroup: false,
-        isVariable: false, isRecurring: true, order: 112, importKey: 'IDAAN', parent: 'Casa'),
-    (name: 'Mantenimiento de Casa', type: TransactionType.expense, isGroup: false,
-        isVariable: false, isRecurring: true, order: 113, importKey: 'Mantenimiento de Casa', parent: 'Casa'),
-    (name: 'Casa - Augusta/GG', type: TransactionType.expense, isGroup: false,
-        isVariable: false, isRecurring: true, order: 114, importKey: 'Casa - Augusta/GG', parent: 'Casa'),
-    (name: 'QLU MBA - IFARHU', type: TransactionType.expense, isGroup: false,
-        isVariable: false, isRecurring: true, order: 115, importKey: 'QLU MBA - IFARHU', parent: 'Casa'),
-    (name: 'Mantenimiento casa de playa', type: TransactionType.expense, isGroup: false,
-        isVariable: false, isRecurring: true, order: 116, importKey: 'Mantenimiento casa de playa', parent: 'Casa'),
+        isVariable: false, isRecurring: true, order: 120, importKey: 'Gas', parent: 'Casa'),
+    (name: 'Agua IDAAN', type: TransactionType.expense, isGroup: false,
+        isVariable: false, isRecurring: true, order: 121, importKey: 'IDAAN', parent: 'Casa'),
+    (name: 'Mantenimiento Augusta', type: TransactionType.expense, isGroup: false,
+        isVariable: false, isRecurring: true, order: 122, importKey: 'Mantenimiento de Casa', parent: 'Casa'),
+    (name: 'Mantenimiento Lajas', type: TransactionType.expense, isGroup: false,
+        isVariable: false, isRecurring: true, order: 123, importKey: 'Mantenimiento casa de playa', parent: 'Casa'),
 
-    // ── Seguro children (fixed) ──
+    // ── Seguro children ──
     (name: 'Progreso', type: TransactionType.expense, isGroup: false,
-        isVariable: false, isRecurring: true, order: 121, importKey: 'Progreso', parent: 'Seguro'),
+        isVariable: false, isRecurring: true, order: 130, importKey: 'Progreso', parent: 'Seguro'),
     (name: 'MAFRE - CASA', type: TransactionType.expense, isGroup: false,
-        isVariable: false, isRecurring: true, order: 122, importKey: 'MAFRE - CASA', parent: 'Seguro'),
+        isVariable: false, isRecurring: true, order: 131, importKey: 'MAFRE - CASA', parent: 'Seguro'),
     (name: 'PALIG - Salud', type: TransactionType.expense, isGroup: false,
-        isVariable: false, isRecurring: true, order: 123, importKey: 'PALIG - Salud', parent: 'Seguro'),
+        isVariable: false, isRecurring: true, order: 132, importKey: 'PALIG - Salud', parent: 'Seguro'),
     (name: 'MAFRE - CARRO', type: TransactionType.expense, isGroup: false,
-        isVariable: false, isRecurring: true, order: 124, importKey: 'MAFRE - CARRO', parent: 'Seguro'),
+        isVariable: false, isRecurring: true, order: 133, importKey: 'MAFRE - CARRO', parent: 'Seguro'),
     (name: 'Seguro médico padres', type: TransactionType.expense, isGroup: false,
-        isVariable: false, isRecurring: true, order: 125, importKey: 'Seguro médico padres', parent: 'Seguro'),
+        isVariable: false, isRecurring: true, order: 134, importKey: 'Seguro médico padres', parent: 'Seguro'),
 
-    // ── Alimentos children (variable) ──
+    // ── Alimentos children ──
     (name: 'Restaurante', type: TransactionType.expense, isGroup: false,
-        isVariable: true, isRecurring: false, order: 131, importKey: 'Restaurante', parent: 'Alimentos'),
+        isVariable: true, isRecurring: false, order: 140, importKey: 'Restaurante', parent: 'Alimentos'),
     (name: 'Supermercado', type: TransactionType.expense, isGroup: false,
-        isVariable: true, isRecurring: false, order: 132, importKey: 'Supermercado', parent: 'Alimentos'),
+        isVariable: true, isRecurring: false, order: 141, importKey: 'Supermercado', parent: 'Alimentos'),
 
-    // ── Carro children (variable) ──
+    // ── Carro children ──
     (name: 'Gasolina', type: TransactionType.expense, isGroup: false,
-        isVariable: true, isRecurring: false, order: 141, importKey: 'Gasolina', parent: 'Carro'),
+        isVariable: true, isRecurring: false, order: 150, importKey: 'Gasolina', parent: 'Carro'),
     (name: 'PANAPASS', type: TransactionType.expense, isGroup: false,
-        isVariable: true, isRecurring: false, order: 142, importKey: 'PANAPASS', parent: 'Carro'),
+        isVariable: true, isRecurring: false, order: 151, importKey: 'PANAPASS', parent: 'Carro'),
 
-    // ── Otros children (variable) ──
+    // ── Otros children ──
     (name: 'Valeria', type: TransactionType.expense, isGroup: false,
-        isVariable: true, isRecurring: false, order: 151, importKey: 'Valeria', parent: 'Otros'),
+        isVariable: true, isRecurring: false, order: 160, importKey: 'Valeria', parent: 'Otros'),
     (name: 'Lala', type: TransactionType.expense, isGroup: false,
-        isVariable: true, isRecurring: false, order: 152, importKey: 'Lala', parent: 'Otros'),
+        isVariable: true, isRecurring: false, order: 161, importKey: 'Lala', parent: 'Otros'),
     (name: 'Viaje (All in one)', type: TransactionType.expense, isGroup: false,
-        isVariable: true, isRecurring: false, order: 153, importKey: 'Viaje (All in one)', parent: 'Otros'),
+        isVariable: true, isRecurring: false, order: 162, importKey: 'Viaje (All in one)', parent: 'Otros'),
     (name: 'Gastos Medicos', type: TransactionType.expense, isGroup: false,
-        isVariable: true, isRecurring: false, order: 154, importKey: 'Gastos Medicos', parent: 'Otros'),
+        isVariable: true, isRecurring: false, order: 163, importKey: 'Gastos Medicos', parent: 'Otros'),
     (name: 'Gastos generales', type: TransactionType.expense, isGroup: false,
-        isVariable: true, isRecurring: false, order: 155, importKey: 'Gastos generales', parent: 'Otros'),
+        isVariable: true, isRecurring: false, order: 164, importKey: 'Gastos generales', parent: 'Otros'),
+
+    // ── Prestamos children ──
+    (name: 'Hipoteca Augusta', type: TransactionType.expense, isGroup: false,
+        isVariable: false, isRecurring: true, order: 170, importKey: 'Casa - Augusta/GG', parent: 'Prestamos'),
+    (name: 'Hipoteca Golf Garden', type: TransactionType.expense, isGroup: false,
+        isVariable: false, isRecurring: true, order: 171, importKey: null, parent: 'Prestamos'),
+    (name: 'QLU MBA - IFARHU', type: TransactionType.expense, isGroup: false,
+        isVariable: false, isRecurring: true, order: 172, importKey: 'QLU MBA - IFARHU', parent: 'Prestamos'),
   ];
 }

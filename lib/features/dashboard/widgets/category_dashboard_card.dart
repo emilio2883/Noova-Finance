@@ -41,10 +41,7 @@ class CategoryDashboardCard extends ConsumerWidget {
   }
 
   Future<void> _openBudgets(BuildContext context) async {
-    final variable = spend.children
-        .map((c) => c.category)
-        .where((c) => c.isVariable)
-        .toList();
+    final variable = spend.children.map((c) => c.category).toList();
     if (variable.isEmpty) return;
     await showModalBottomSheet(
       context: context,

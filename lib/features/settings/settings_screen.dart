@@ -36,8 +36,8 @@ class SettingsScreen extends ConsumerWidget {
             context,
             icon: Icons.upload_file,
             title: 'Importar Excel',
-            subtitle: 'Cargar histórico de Y24/Y25/Y26',
-            onTap: () => context.go('/import'),
+            subtitle: 'Cargar archivo Excel de tu Estado Financiero',
+            onTap: () => context.push('/import'),
           ),
           _item(
             context,
@@ -52,14 +52,14 @@ class SettingsScreen extends ConsumerWidget {
             icon: Icons.category_outlined,
             title: 'Categorías',
             subtitle: 'Principales y subcategorías',
-            onTap: () => context.go('/categories'),
+            onTap: () => context.push('/categories'),
           ),
           _item(
             context,
             icon: Icons.savings_outlined,
             title: 'Presupuestos',
             subtitle: 'Límites por subcategoría',
-            onTap: () => context.go('/budgets'),
+            onTap: () => context.push('/budgets'),
           ),
           _section('APARIENCIA'),
           Card(

@@ -69,9 +69,19 @@ class CategoryRepository {
       }
 
       // 3. Deactivate legacy categories not part of the new tree
+      final parentNames = DefaultCategories.defs
+          .where((d) => d.isGroup)
+          .map((d) => d.name)
+          .toSet();
       final all = await _isar.categorys.where().findAll();
       for (final c in all) {
-        if (c.isGroup) continue;
+        if (c.isGroup) {
+          if (!parentNames.contains(c.name) && c.isActive) {
+            c.isActive = false;
+            await _isar.categorys.put(c);
+          }
+          continue;
+        }
         if (c.importKey == null || !knownImportKeys.contains(c.importKey)) {
           if (c.isActive) {
             c.isActive = false;
@@ -93,6 +103,8 @@ class CategoryRepository {
           .typeEqualTo(type)
           .and()
           .parentIdIsNull()
+          .and()
+          .isActiveEqualTo(true)
           .sortByOrder()
           .findAll();
 

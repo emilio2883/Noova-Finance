@@ -1,40 +1,45 @@
 import 'package:flutter/material.dart';
 
-/// Noova Finance themes: dark (default) + light.
-/// Semantic accent colors (income green, expense coral, teal accent) work on
-/// both. Surface/background colors come from ThemeData so widgets adapt.
+import '../theme/app_theme.dart';
+
+/// Noova themes — brand "navy" identity (deep navy field + white mark look).
+/// Dark is the default; a light variant is also provided. The palette mirrors
+/// the Noova logo: deep navy background, soft navy surfaces, white text,
+/// a cyan accent, and functional income/expense colors.
 class NoovaTheme {
   // Semantic colors (theme-independent)
-  static const Color income = Color(0xFF00C853); // green
-  static const Color expense = Color(0xFFFF5252); // coral red
-  static const Color accent = Color(0xFF00BCD4); // teal
-  static const Color warning = Color(0xFFFFB74D);
+  static const Color income = Color(0xFF3DDC97); // mint green
+  static const Color expense = Color(0xFFFF6B6B); // coral
+  static const Color accent = Color(0xFF35C7EE); // brand cyan
+  static const Color warning = Color(0xFFF6C453); // amber
 
-  // Dark palette
-  static const Color background = Color(0xFF121212);
-  static const Color surface = Color(0xFF1E1E2E);
-  static const Color surfaceVariant = Color(0xFF16213E);
-  static const Color card = Color(0xFF1A1A2E);
-  static const Color textPrimary = Color(0xFFE0E0E0);
-  static const Color textSecondary = Color(0xFF9E9E9E);
+  // Dark palette (Noova navy)
+  static const Color background = Color(0xFF071C2C);
+  static const Color surface = Color(0xFF0E2A40);
+  static const Color surfaceVariant = Color(0xFF123A57);
+  static const Color card = Color(0xFF0D2740);
+  static const Color textPrimary = Color(0xFFEAF1F6);
+  static const Color textSecondary = Color(0xFF93A7B8);
 
-  // Light palette
+  // Light palette (navy-on-light)
   static const Color _lightBg = Color(0xFFF4F5F7);
   static const Color _lightSurface = Color(0xFFFFFFFF);
-  static const Color _lightText = Color(0xFF1A1A1A);
-  static const Color _lightTextSecondary = Color(0xFF6B6B76);
+  static const Color _lightText = Color(0xFF0B2135);
+  static const Color _lightTextSecondary = Color(0xFF5C6B7A);
+  static const Color _brandNavy = Color(0xFF0B2F49);
 
   static ThemeData get darkTheme {
     final base = ThemeData.dark(useMaterial3: true);
     return base.copyWith(
+      extensions: [AppTheme.dark],
       scaffoldBackgroundColor: background,
       colorScheme: const ColorScheme.dark(
         primary: accent,
         secondary: income,
         error: expense,
         surface: surface,
-        onPrimary: Colors.black,
-        onSecondary: Colors.black,
+        onPrimary: Color(0xFF04121D),
+        onSecondary: Color(0xFF04121D),
         onSurface: textPrimary,
       ),
       appBarTheme: const AppBarTheme(
@@ -46,13 +51,14 @@ class NoovaTheme {
       cardTheme: const CardThemeData(
         color: card,
         elevation: 2,
+        shadowColor: Colors.black54,
         margin: EdgeInsets.symmetric(horizontal: 16, vertical: 6),
       ),
       dialogTheme: const DialogThemeData(backgroundColor: surface),
       bottomSheetTheme: const BottomSheetThemeData(backgroundColor: surface),
       floatingActionButtonTheme: const FloatingActionButtonThemeData(
         backgroundColor: accent,
-        foregroundColor: Colors.black,
+        foregroundColor: Color(0xFF04121D),
       ),
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
@@ -81,9 +87,10 @@ class NoovaTheme {
   static ThemeData get lightTheme {
     final base = ThemeData.light(useMaterial3: true);
     return base.copyWith(
+      extensions: [AppTheme.light],
       scaffoldBackgroundColor: _lightBg,
       colorScheme: const ColorScheme.light(
-        primary: Color(0xFF00838F),
+        primary: _brandNavy,
         secondary: Color(0xFF00A152),
         error: Color(0xFFD32F2F),
         surface: _lightSurface,
@@ -104,7 +111,7 @@ class NoovaTheme {
       dialogTheme: const DialogThemeData(backgroundColor: _lightSurface),
       bottomSheetTheme: const BottomSheetThemeData(backgroundColor: _lightSurface),
       floatingActionButtonTheme: const FloatingActionButtonThemeData(
-        backgroundColor: Color(0xFF00838F),
+        backgroundColor: _brandNavy,
         foregroundColor: Colors.white,
       ),
       inputDecorationTheme: InputDecorationTheme(
@@ -116,7 +123,7 @@ class NoovaTheme {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: Color(0xFF00838F), width: 2),
+          borderSide: const BorderSide(color: _brandNavy, width: 2),
         ),
         labelStyle: const TextStyle(color: _lightTextSecondary),
       ),

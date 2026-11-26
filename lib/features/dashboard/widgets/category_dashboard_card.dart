@@ -121,16 +121,7 @@ class CategoryDashboardCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    return GestureDetector(
-      onVerticalDragEnd: (details) {
-        final v = details.primaryVelocity ?? 0;
-        if (v > 250) {
-          _openAdd(context); // swipe down
-        } else if (v < -250) {
-          _openBudgets(context); // swipe up
-        }
-      },
-      child: Card(
+    return Card(
         child: InkWell(
           borderRadius: AppRadii.standard.brMd,
           onTap: () => _openDetail(context),
@@ -207,7 +198,6 @@ class CategoryDashboardCard extends ConsumerWidget {
             ),
           ),
         ),
-      ),
     );
   }
 }

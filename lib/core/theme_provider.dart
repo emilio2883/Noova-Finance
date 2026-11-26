@@ -14,7 +14,16 @@ class ThemeModeNotifier extends StateNotifier<ThemeMode> {
     try {
       final repo = await _ref.read(settingsRepoProvider.future);
       final s = await repo.get();
-      state = s.themeMode == 'light' ? ThemeMode.light : ThemeMode.dark;
+      if (!s.themeChoiceMade) {
+        // No explicit choice yet -> brand default is LIGHT; migrate stale value.
+        state = ThemeMode.light;
+        if (s.themeMode != 'light') {
+          s.themeMode = 'light';
+          await repo.update(s);
+        }
+      } else {
+        state = s.themeMode == 'light' ? ThemeMode.light : ThemeMode.dark;
+      }
     } catch (_) {}
   }
 
@@ -24,6 +33,7 @@ class ThemeModeNotifier extends StateNotifier<ThemeMode> {
       final repo = await _ref.read(settingsRepoProvider.future);
       final s = await repo.get();
       s.themeMode = dark ? 'dark' : 'light';
+      s.themeChoiceMade = true;
       await repo.update(s);
     } catch (_) {}
   }

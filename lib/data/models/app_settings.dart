@@ -25,6 +25,10 @@ class AppSettings {
   /// 'dark' | 'light'
   String themeMode;
 
+  /// True once the user explicitly picks a theme via the switch. When false
+  /// the app follows the brand default (light), ignoring a stale stored value.
+  bool themeChoiceMade;
+
   /// Has historical Excel data been imported
   bool isImported;
 
@@ -38,6 +42,7 @@ class AppSettings {
     this.reminderMinute = 0,
     this.defaultCurrency = 'USD',
     this.themeMode = 'light',
+    this.themeChoiceMade = false,
     this.isImported = false,
     this.lastExportDate,
   });

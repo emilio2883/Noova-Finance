@@ -63,7 +63,7 @@ class DashboardScreen extends ConsumerWidget {
                               color: context.app.colors.textSecondary,
                               fontSize: 12,
                               letterSpacing: 1.5)),
-                      Text('Desliza ↓ gasto · ↑ presupuesto',
+                      Text('Toca una categoría para ver el detalle',
                           style: TextStyle(
                               color: context.app.colors.textSecondary, fontSize: 10)),
                     ],
@@ -77,7 +77,7 @@ class DashboardScreen extends ConsumerWidget {
                         padding: EdgeInsets.all(24),
                         child: Center(
                           child: Text(
-                              'Aún no hay gastos esta quincena.\nDesliza abajo en una categoría para registrar.'),
+                              'Aún no hay gastos esta quincena.'),
                         ),
                       ),
                     ),

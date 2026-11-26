@@ -57,8 +57,13 @@ const AppSettingsSchema = CollectionSchema(
       name: r'reminderMinute',
       type: IsarType.long,
     ),
-    r'themeMode': PropertySchema(
+    r'themeChoiceMade': PropertySchema(
       id: 8,
+      name: r'themeChoiceMade',
+      type: IsarType.bool,
+    ),
+    r'themeMode': PropertySchema(
+      id: 9,
       name: r'themeMode',
       type: IsarType.string,
     )
@@ -108,7 +113,8 @@ void _appSettingsSerialize(
   writer.writeBool(offsets[5], object.reminderEnabled);
   writer.writeLong(offsets[6], object.reminderHour);
   writer.writeLong(offsets[7], object.reminderMinute);
-  writer.writeString(offsets[8], object.themeMode);
+  writer.writeBool(offsets[8], object.themeChoiceMade);
+  writer.writeString(offsets[9], object.themeMode);
 }
 
 AppSettings _appSettingsDeserialize(
@@ -126,7 +132,8 @@ AppSettings _appSettingsDeserialize(
     reminderEnabled: reader.readBoolOrNull(offsets[5]) ?? false,
     reminderHour: reader.readLongOrNull(offsets[6]) ?? 20,
     reminderMinute: reader.readLongOrNull(offsets[7]) ?? 0,
-    themeMode: reader.readStringOrNull(offsets[8]) ?? 'light',
+    themeChoiceMade: reader.readBoolOrNull(offsets[8]) ?? false,
+    themeMode: reader.readStringOrNull(offsets[9]) ?? 'light',
   );
   object.id = id;
   return object;
@@ -156,6 +163,8 @@ P _appSettingsDeserializeProp<P>(
     case 7:
       return (reader.readLongOrNull(offset) ?? 0) as P;
     case 8:
+      return (reader.readBoolOrNull(offset) ?? false) as P;
+    case 9:
       return (reader.readStringOrNull(offset) ?? 'light') as P;
     default:
       throw IsarError('Unknown property with id $propertyId');
@@ -813,6 +822,16 @@ extension AppSettingsQueryFilter
   }
 
   QueryBuilder<AppSettings, AppSettings, QAfterFilterCondition>
+      themeChoiceMadeEqualTo(bool value) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'themeChoiceMade',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<AppSettings, AppSettings, QAfterFilterCondition>
       themeModeEqualTo(
     String value, {
     bool caseSensitive = true,
@@ -1060,6 +1079,19 @@ extension AppSettingsQuerySortBy
     });
   }
 
+  QueryBuilder<AppSettings, AppSettings, QAfterSortBy> sortByThemeChoiceMade() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'themeChoiceMade', Sort.asc);
+    });
+  }
+
+  QueryBuilder<AppSettings, AppSettings, QAfterSortBy>
+      sortByThemeChoiceMadeDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'themeChoiceMade', Sort.desc);
+    });
+  }
+
   QueryBuilder<AppSettings, AppSettings, QAfterSortBy> sortByThemeMode() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'themeMode', Sort.asc);
@@ -1190,6 +1222,19 @@ extension AppSettingsQuerySortThenBy
     });
   }
 
+  QueryBuilder<AppSettings, AppSettings, QAfterSortBy> thenByThemeChoiceMade() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'themeChoiceMade', Sort.asc);
+    });
+  }
+
+  QueryBuilder<AppSettings, AppSettings, QAfterSortBy>
+      thenByThemeChoiceMadeDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'themeChoiceMade', Sort.desc);
+    });
+  }
+
   QueryBuilder<AppSettings, AppSettings, QAfterSortBy> thenByThemeMode() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'themeMode', Sort.asc);
@@ -1258,6 +1303,13 @@ extension AppSettingsQueryWhereDistinct
     });
   }
 
+  QueryBuilder<AppSettings, AppSettings, QDistinct>
+      distinctByThemeChoiceMade() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'themeChoiceMade');
+    });
+  }
+
   QueryBuilder<AppSettings, AppSettings, QDistinct> distinctByThemeMode(
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
@@ -1321,6 +1373,12 @@ extension AppSettingsQueryProperty
   QueryBuilder<AppSettings, int, QQueryOperations> reminderMinuteProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'reminderMinute');
+    });
+  }
+
+  QueryBuilder<AppSettings, bool, QQueryOperations> themeChoiceMadeProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'themeChoiceMade');
     });
   }
 

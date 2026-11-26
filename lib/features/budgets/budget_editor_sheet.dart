@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../core/theme.dart';
+
 import '../../core/utils/decimal_utils.dart';
 import '../../data/models/budget.dart';
 import '../../data/models/category.dart';
 import '../../data/providers.dart';
+import 'package:noova_finance/theme/app_theme.dart';
 
 /// Edit per-quincena budgets for a list of (variable) subcategories.
 class BudgetEditorSheet extends ConsumerStatefulWidget {
@@ -105,7 +106,7 @@ class _BudgetEditorSheetState extends ConsumerState<BudgetEditorSheet> {
                   FilledButton(
                     onPressed: _save,
                     style: FilledButton.styleFrom(
-                      backgroundColor: NoovaTheme.accent,
+                      backgroundColor: context.app.colors.primary,
                       foregroundColor: Colors.black,
                       padding: const EdgeInsets.symmetric(vertical: 14),
                     ),

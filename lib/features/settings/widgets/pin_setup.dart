@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../core/theme.dart';
+
 import '../../../data/providers.dart';
+import 'package:noova_finance/theme/app_theme.dart';
 
 /// PIN setup / change / disable dialog (US8).
 /// Stores the PIN in AppSettings.pinHash (local-only MVP).
@@ -148,9 +149,9 @@ class _PinSetupDialogState extends ConsumerState<PinSetupDialog> {
             const SizedBox(height: 8),
             TextButton.icon(
               onPressed: _disablePin,
-              icon: const Icon(Icons.lock_open, color: NoovaTheme.expense),
-              label: const Text('Quitar PIN',
-                  style: TextStyle(color: NoovaTheme.expense)),
+              icon: Icon(Icons.lock_open, color: context.app.colors.expense),
+              label: Text('Quitar PIN',
+                  style: TextStyle(color: context.app.colors.expense)),
             ),
           ] else
             FilledButton.icon(

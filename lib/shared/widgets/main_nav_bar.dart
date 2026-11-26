@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../core/theme.dart';
+
+import 'package:noova_finance/theme/app_theme.dart';
 
 /// Bottom navigation for the main tabs: Dashboard, Quincenal, Graficos, Ajustes.
 class MainNavBar extends StatelessWidget {
@@ -21,7 +22,7 @@ class MainNavBar extends StatelessWidget {
     return NavigationBar(
       backgroundColor: Theme.of(context).colorScheme.surface,
       selectedIndex: _index,
-      indicatorColor: NoovaTheme.accent.withValues(alpha: 0.15),
+      indicatorColor: context.app.colors.primary.withValues(alpha: 0.15),
       onDestinationSelected: (i) {
         switch (i) {
           case 0:
@@ -34,25 +35,25 @@ class MainNavBar extends StatelessWidget {
             context.go('/settings');
         }
       },
-      destinations: const [
+      destinations: [
         NavigationDestination(
           icon: Icon(Icons.home_outlined),
-          selectedIcon: Icon(Icons.home, color: NoovaTheme.accent),
+          selectedIcon: Icon(Icons.home, color: context.app.colors.primary),
           label: 'Inicio',
         ),
         NavigationDestination(
           icon: Icon(Icons.grid_view_outlined),
-          selectedIcon: Icon(Icons.grid_view, color: NoovaTheme.accent),
+          selectedIcon: Icon(Icons.grid_view, color: context.app.colors.primary),
           label: 'Quincena',
         ),
         NavigationDestination(
           icon: Icon(Icons.bar_chart_outlined),
-          selectedIcon: Icon(Icons.bar_chart, color: NoovaTheme.accent),
+          selectedIcon: Icon(Icons.bar_chart, color: context.app.colors.primary),
           label: 'Graficos',
         ),
         NavigationDestination(
           icon: Icon(Icons.settings_outlined),
-          selectedIcon: Icon(Icons.settings, color: NoovaTheme.accent),
+          selectedIcon: Icon(Icons.settings, color: context.app.colors.primary),
           label: 'Ajustes',
         ),
       ],

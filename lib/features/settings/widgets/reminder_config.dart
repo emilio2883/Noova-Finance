@@ -2,8 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/services/notification_service.dart';
-import '../../../core/theme.dart';
+
 import '../../../data/providers.dart';
+import 'package:noova_finance/theme/app_theme.dart';
 
 /// Daily registration reminder config (US11).
 /// Toggle + time picker -> schedules a daily local notification.
@@ -94,7 +95,7 @@ class _ReminderConfigState extends ConsumerState<ReminderConfig> {
                   : 'Recordatorio desactivado',
               style: const TextStyle(fontSize: 12),
             ),
-            activeColor: NoovaTheme.accent,
+            activeColor: context.app.colors.primary,
             value: _enabled,
             onChanged: (v) async {
               setState(() => _enabled = v);
@@ -103,7 +104,7 @@ class _ReminderConfigState extends ConsumerState<ReminderConfig> {
           ),
           if (_enabled)
             ListTile(
-              leading: const Icon(Icons.schedule, color: NoovaTheme.accent),
+              leading: Icon(Icons.schedule, color: context.app.colors.primary),
               title: const Text('Hora del recordatorio'),
               trailing: Text(
                 _timeLabel,

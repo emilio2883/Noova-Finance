@@ -3,8 +3,9 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-import '../../core/theme.dart';
+
 import '../../theme/app_radii.dart';
+import 'package:noova_finance/theme/app_theme.dart';
 
 /// PIN/biometric lock screen (US8). 3 strikes -> 30s cooldown.
 class LockScreen extends StatefulWidget {
@@ -81,7 +82,7 @@ class _LockScreenState extends State<LockScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(Icons.lock_outline, size: 48, color: NoovaTheme.accent),
+            Icon(Icons.lock_outline, size: 48, color: context.app.colors.primary),
             const SizedBox(height: 16),
             Text(
               _locked ? 'Espera \$_cooldownSeconds s' : 'Ingresa tu PIN',
@@ -100,7 +101,7 @@ class _LockScreenState extends State<LockScreen> {
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     color: i < _entered.length
-                        ? NoovaTheme.accent
+                        ? context.app.colors.primary
                         : Theme.of(context).colorScheme.surfaceContainerHighest,
                   ),
                 ),

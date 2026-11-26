@@ -3,7 +3,7 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../core/theme.dart';
+
 import '../../shared/widgets/main_nav_bar.dart';
 import '../../core/utils/date_utils.dart';
 import '../../core/utils/money_format.dart';
@@ -11,6 +11,7 @@ import '../../data/models/transaction.dart';
 import '../../data/providers.dart';
 import '../../data/services/saldo_calculator.dart';
 import '../../theme/app_radii.dart';
+import 'package:noova_finance/theme/app_theme.dart';
 
 /// Charts: expense bar chart + saldo line chart (US6).
 class ChartsScreen extends ConsumerWidget {
@@ -38,17 +39,17 @@ class ChartsScreen extends ConsumerWidget {
             return ListView(
               padding: const EdgeInsets.all(16),
               children: [
-                const Text('GASTOS POR CATEGORIA (MES)',
+                Text('GASTOS POR CATEGORIA (MES)',
                     style: TextStyle(
-                        color: NoovaTheme.textSecondary,
+                        color: context.app.colors.textSecondary,
                         fontSize: 12,
                         letterSpacing: 1.5)),
                 const SizedBox(height: 12),
                 _ExpenseBarChart(byCategory: byCat),
                 const SizedBox(height: 32),
-                const Text('SALDO MENSUAL (12 MESES)',
+                Text('SALDO MENSUAL (12 MESES)',
                     style: TextStyle(
-                        color: NoovaTheme.textSecondary,
+                        color: context.app.colors.textSecondary,
                         fontSize: 12,
                         letterSpacing: 1.5)),
                 const SizedBox(height: 12),
@@ -105,7 +106,7 @@ class _ExpenseBarChart extends ConsumerWidget {
                             ? 0
                             : (e.value / max).toDouble(),
                         backgroundColor: Theme.of(context).colorScheme.surfaceContainerHighest,
-                        color: NoovaTheme.expense,
+                        color: context.app.colors.expense,
                         minHeight: 6,
                         borderRadius: AppRadii.standard.brXs,
                       ),
@@ -180,12 +181,12 @@ class _SaldoLineChart extends StatelessWidget {
                 LineChartBarData(
                   spots: spots,
                   isCurved: true,
-                  color: NoovaTheme.accent,
+                  color: context.app.colors.primary,
                   barWidth: 2.5,
                   dotData: const FlDotData(show: false),
                   belowBarData: BarAreaData(
                     show: true,
-                    color: NoovaTheme.accent.withValues(alpha: 0.1),
+                    color: context.app.colors.primary.withValues(alpha: 0.1),
                   ),
                 ),
               ],

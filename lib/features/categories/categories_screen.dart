@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../core/theme.dart';
+
 import '../../data/models/category.dart';
 import '../../data/models/transaction.dart';
 import '../../data/providers.dart';
+import 'package:noova_finance/theme/app_theme.dart';
 
 /// Category management with a 2-level tree (principal -> subcategory).
 class CategoriesScreen extends ConsumerStatefulWidget {
@@ -195,7 +196,7 @@ class _CategoriesScreenState extends ConsumerState<CategoriesScreen> {
           TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancelar')),
           FilledButton(
             onPressed: () => Navigator.pop(ctx, true),
-            style: FilledButton.styleFrom(backgroundColor: NoovaTheme.expense),
+            style: FilledButton.styleFrom(backgroundColor: context.app.colors.expense),
             child: const Text('Eliminar'),
           ),
         ],
@@ -277,13 +278,13 @@ class _CategoriesScreenState extends ConsumerState<CategoriesScreen> {
                                 ? Icons.arrow_downward
                                 : Icons.arrow_upward,
                             color: p.type == TransactionType.income
-                                ? NoovaTheme.income
-                                : NoovaTheme.expense,
+                                ? context.app.colors.income
+                                : context.app.colors.expense,
                           ),
                           title: Text(p.name,
                               style: TextStyle(
                                   fontWeight: FontWeight.w600,
-                                  color: p.isActive ? null : NoovaTheme.textSecondary)),
+                                  color: p.isActive ? null : context.app.colors.textSecondary)),
                           subtitle: Text('${children.length} subcategorías',
                               style: const TextStyle(fontSize: 11)),
                           trailing: _menu(p, isChild: false),
@@ -293,16 +294,16 @@ class _CategoriesScreenState extends ConsumerState<CategoriesScreen> {
                                 contentPadding: const EdgeInsets.only(left: 40, right: 8),
                                 title: Text(c.name,
                                     style: TextStyle(
-                                        color: c.isActive ? null : NoovaTheme.textSecondary)),
+                                        color: c.isActive ? null : context.app.colors.textSecondary)),
                                 subtitle: Text(c.isVariable ? 'Variable' : 'Fija',
                                     style: const TextStyle(fontSize: 11)),
                                 trailing: _menu(c, isChild: true),
                               ),
                             if (children.isEmpty)
-                              const Padding(
-                                padding: EdgeInsets.all(12),
+                              Padding(
+                                padding: const EdgeInsets.all(12),
                                 child: Text('Sin subcategorías. Agrega una con +',
-                                    style: TextStyle(fontSize: 12, color: NoovaTheme.textSecondary)),
+                                    style: TextStyle(fontSize: 12, color: context.app.colors.textSecondary)),
                               ),
                           ],
                         ),
@@ -318,8 +319,8 @@ class _CategoriesScreenState extends ConsumerState<CategoriesScreen> {
                             ? Icons.arrow_downward
                             : Icons.arrow_upward,
                         color: p.type == TransactionType.income
-                            ? NoovaTheme.income
-                            : NoovaTheme.expense,
+                            ? context.app.colors.income
+                            : context.app.colors.expense,
                       ),
                       title: Text(p.name),
                       subtitle: Text(p.isVariable ? 'Variable' : 'Fija',

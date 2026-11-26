@@ -7,7 +7,7 @@ import 'package:open_filex/open_filex.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 
-import '../../core/theme.dart';
+
 import '../../core/theme_provider.dart';
 import '../../data/models/budget.dart';
 import '../../data/models/category.dart';
@@ -18,6 +18,7 @@ import '../dashboard/providers/dashboard_provider.dart';
 import '../../shared/widgets/main_nav_bar.dart';
 import 'widgets/pin_setup.dart';
 import 'widgets/reminder_config.dart';
+import 'package:noova_finance/theme/app_theme.dart';
 
 /// Settings hub: data, management, appearance, security.
 class SettingsScreen extends ConsumerWidget {
@@ -31,7 +32,7 @@ class SettingsScreen extends ConsumerWidget {
       appBar: AppBar(title: const Text('Ajustes')),
       body: ListView(
         children: [
-          _section('DATOS'),
+          _section(context, 'DATOS'),
           _item(
             context,
             icon: Icons.upload_file,
@@ -46,7 +47,7 @@ class SettingsScreen extends ConsumerWidget {
             subtitle: 'Guardar .xlsx en el dispositivo y abrir con Excel',
             onTap: () => _export(context, ref),
           ),
-          _section('GESTIÓN'),
+          _section(context, 'GESTIÓN'),
           _item(
             context,
             icon: Icons.category_outlined,
@@ -61,11 +62,11 @@ class SettingsScreen extends ConsumerWidget {
             subtitle: 'Límites por subcategoría',
             onTap: () => context.push('/budgets'),
           ),
-          _section('APARIENCIA'),
+          _section(context, 'APARIENCIA'),
           Card(
             margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
             child: SwitchListTile(
-              secondary: const Icon(Icons.dark_mode_outlined, color: NoovaTheme.accent),
+              secondary: Icon(Icons.dark_mode_outlined, color: context.app.colors.primary),
               title: const Text('Modo oscuro'),
               subtitle: const Text('Desactiva para modo claro',
                   style: TextStyle(fontSize: 12)),
@@ -73,7 +74,7 @@ class SettingsScreen extends ConsumerWidget {
               onChanged: (v) => ref.read(themeModeProvider.notifier).setDark(v),
             ),
           ),
-          _section('SEGURIDAD Y AVISOS'),
+          _section(context, 'SEGURIDAD Y AVISOS'),
           _item(
             context,
             icon: Icons.lock_outline,
@@ -85,13 +86,13 @@ class SettingsScreen extends ConsumerWidget {
             ),
           ),
           const ReminderConfig(),
-          _section('PELIGRO'),
+          _section(context, 'PELIGRO'),
           _item(
             context,
             icon: Icons.delete_forever,
             title: 'Borrar todos los datos',
             subtitle: 'Elimina transacciones y reinicia categorías',
-            color: NoovaTheme.expense,
+            color: context.app.colors.expense,
             onTap: () => _resetData(context, ref),
           ),
         ],
@@ -161,7 +162,7 @@ class SettingsScreen extends ConsumerWidget {
               child: const Text('Cancelar')),
           FilledButton(
             onPressed: () => Navigator.pop(ctx, true),
-            style: FilledButton.styleFrom(backgroundColor: NoovaTheme.expense),
+            style: FilledButton.styleFrom(backgroundColor: context.app.colors.expense),
             child: const Text('Borrar todo'),
           ),
         ],
@@ -186,12 +187,12 @@ class SettingsScreen extends ConsumerWidget {
     }
   }
 
-  Widget _section(String title) {
+  Widget _section(BuildContext context, String title) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(20, 20, 20, 8),
       child: Text(title,
-          style: const TextStyle(
-              color: NoovaTheme.textSecondary, fontSize: 12, letterSpacing: 1.5)),
+          style: TextStyle(
+              color: context.app.colors.textSecondary, fontSize: 12, letterSpacing: 1.5)),
     );
   }
 
@@ -206,7 +207,7 @@ class SettingsScreen extends ConsumerWidget {
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
       child: ListTile(
-        leading: Icon(icon, color: color ?? NoovaTheme.accent),
+        leading: Icon(icon, color: color ?? context.app.colors.primary),
         title: Text(title, style: TextStyle(color: color)),
         subtitle: Text(subtitle, style: const TextStyle(fontSize: 12)),
         trailing: const Icon(Icons.chevron_right, size: 18),

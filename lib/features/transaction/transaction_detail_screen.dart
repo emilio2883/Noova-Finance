@@ -2,12 +2,13 @@ import 'package:decimal/decimal.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../core/theme.dart';
+
 import '../../core/utils/decimal_utils.dart';
 import '../../data/models/transaction.dart';
 import '../../shared/widgets/category_selector.dart';
 import '../../shared/widgets/date_picker_field.dart';
 import 'providers/transaction_provider.dart';
+import 'package:noova_finance/theme/app_theme.dart';
 
 /// Full-screen view/edit/delete for a single transaction.
 /// Replaces the old fixed bottom sheet (draggable, scrollable).
@@ -73,7 +74,7 @@ class _TransactionDetailScreenState
           ),
           FilledButton(
             onPressed: () => Navigator.pop(ctx, true),
-            style: FilledButton.styleFrom(backgroundColor: NoovaTheme.expense),
+            style: FilledButton.styleFrom(backgroundColor: context.app.colors.expense),
             child: const Text('Eliminar'),
           ),
         ],
@@ -93,7 +94,7 @@ class _TransactionDetailScreenState
         title: const Text('Transacción'),
         actions: [
           IconButton(
-            icon: const Icon(Icons.delete_outline, color: NoovaTheme.expense),
+            icon: Icon(Icons.delete_outline, color: context.app.colors.expense),
             onPressed: _delete,
           ),
         ],
@@ -133,7 +134,7 @@ class _TransactionDetailScreenState
           FilledButton(
             onPressed: _save,
             style: FilledButton.styleFrom(
-              backgroundColor: isExpense ? NoovaTheme.expense : NoovaTheme.income,
+              backgroundColor: isExpense ? context.app.colors.expense : context.app.colors.income,
               foregroundColor: Colors.black,
               padding: const EdgeInsets.symmetric(vertical: 16),
             ),

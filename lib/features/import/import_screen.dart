@@ -4,10 +4,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:isar/isar.dart';
 
-import '../../core/theme.dart';
+
 import '../../data/models/import_record.dart';
 import '../../data/providers.dart';
 import '../../data/services/excel_importer.dart';
+import 'package:noova_finance/theme/app_theme.dart';
 
 /// Excel import: pick file -> import -> log + history (US2).
 /// Keep a record of every imported file so multiple sources can be tracked.
@@ -133,7 +134,7 @@ class _ImportScreenState extends ConsumerState<ImportScreen> {
                     children: [
                       Row(
                         children: [
-                          const Icon(Icons.check_circle, color: NoovaTheme.income),
+                          Icon(Icons.check_circle, color: context.app.colors.income),
                           const SizedBox(width: 8),
                           Expanded(
                             child: Text('Importación completada',
@@ -151,7 +152,7 @@ class _ImportScreenState extends ConsumerState<ImportScreen> {
                       if (result.unknownRows.isNotEmpty) ...[
                         const SizedBox(height: 8),
                         Text('Filas no reconocidas: ${result.unknownRows.join(", ")}',
-                            style: const TextStyle(color: NoovaTheme.textSecondary)),
+                            style: TextStyle(color: context.app.colors.textSecondary)),
                       ],
                       const SizedBox(height: 12),
                       Align(
@@ -172,28 +173,28 @@ class _ImportScreenState extends ConsumerState<ImportScreen> {
                 child: Padding(
                   padding: const EdgeInsets.all(16),
                   child: Text('Error al importar: ${result.error}',
-                      style: const TextStyle(color: NoovaTheme.expense)),
+                      style: TextStyle(color: context.app.colors.expense)),
                 ),
               ),
           ],
           const SizedBox(height: 24),
-          const Text('HISTORIAL DE IMPORTACIONES',
+          Text('HISTORIAL DE IMPORTACIONES',
               style: TextStyle(
-                  color: NoovaTheme.textSecondary,
+                  color: context.app.colors.textSecondary,
                   fontSize: 12,
                   letterSpacing: 1.5)),
           const SizedBox(height: 8),
           if (_records.isEmpty)
-            const Padding(
-              padding: EdgeInsets.all(12),
+            Padding(
+              padding: const EdgeInsets.all(12),
               child: Text('Aún no has importado archivos.',
-                  style: TextStyle(fontSize: 12, color: NoovaTheme.textSecondary)),
+                  style: TextStyle(fontSize: 12, color: context.app.colors.textSecondary)),
             )
           else
             for (final r in _records)
               Card(
                 child: ListTile(
-                  leading: const Icon(Icons.description_outlined, color: NoovaTheme.accent),
+                  leading: Icon(Icons.description_outlined, color: context.app.colors.primary),
                   title: Text(r.fileName, style: const TextStyle(fontSize: 14)),
                   subtitle: Text(
                     '${r.importedAt.day}/${r.importedAt.month}/${r.importedAt.year} · '

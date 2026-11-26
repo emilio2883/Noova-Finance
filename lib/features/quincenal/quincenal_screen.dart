@@ -2,7 +2,7 @@ import 'package:decimal/decimal.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../core/theme.dart';
+
 import '../../core/utils/date_utils.dart';
 import '../../core/utils/money_format.dart';
 import '../../data/models/category.dart';
@@ -12,6 +12,7 @@ import '../../data/services/saldo_calculator.dart';
 import '../../shared/widgets/main_nav_bar.dart';
 import '../transaction/quick_add_modal.dart';
 import '../transaction/transaction_detail_screen.dart';
+import 'package:noova_finance/theme/app_theme.dart';
 
 class _QuincenaData {
   final List<Transaction> txns;
@@ -99,7 +100,7 @@ class _QuincenalScreenState extends ConsumerState<QuincenalScreen> {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: _openAdd,
-        backgroundColor: NoovaTheme.accent,
+        backgroundColor: context.app.colors.primary,
         foregroundColor: Colors.black,
         child: const Icon(Icons.add),
       ),
@@ -128,10 +129,10 @@ class _QuincenalScreenState extends ConsumerState<QuincenalScreen> {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceAround,
                     children: [
-                      _total('Ingresos', ingresos, NoovaTheme.income),
-                      _total('Gastos', gastos, NoovaTheme.expense),
+                      _total('Ingresos', ingresos, context.app.colors.income),
+                      _total('Gastos', gastos, context.app.colors.expense),
                       _total('Utilidad', utilidad,
-                          utilidad >= Decimal.zero ? NoovaTheme.income : NoovaTheme.expense),
+                          utilidad >= Decimal.zero ? context.app.colors.income : context.app.colors.expense),
                     ],
                   ),
                 ),
@@ -183,8 +184,8 @@ class _QuincenalScreenState extends ConsumerState<QuincenalScreen> {
                                   ? Icons.arrow_downward
                                   : Icons.arrow_upward,
                               color: t.type == TransactionType.income
-                                  ? NoovaTheme.income
-                                  : NoovaTheme.expense,
+                                  ? context.app.colors.income
+                                  : context.app.colors.expense,
                               size: 20,
                             ),
                             title: Text(cat?.name ?? 'Sin categoría'),
@@ -199,8 +200,8 @@ class _QuincenalScreenState extends ConsumerState<QuincenalScreen> {
                               style: TextStyle(
                                 fontWeight: FontWeight.bold,
                                 color: t.type == TransactionType.income
-                                    ? NoovaTheme.income
-                                    : NoovaTheme.expense,
+                                    ? context.app.colors.income
+                                    : context.app.colors.expense,
                               ),
                             ),
                             onTap: () async {
@@ -228,8 +229,8 @@ class _QuincenalScreenState extends ConsumerState<QuincenalScreen> {
     return Column(
       children: [
         Text(label.toUpperCase(),
-            style: const TextStyle(
-                color: NoovaTheme.textSecondary, fontSize: 10)),
+            style: TextStyle(
+                color: context.app.colors.textSecondary, fontSize: 10)),
         Text(MoneyFormat.format(value),
             style: TextStyle(
                 color: color, fontWeight: FontWeight.bold, fontSize: 15)),

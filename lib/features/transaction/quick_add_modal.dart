@@ -2,7 +2,7 @@ import 'package:decimal/decimal.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../core/theme.dart';
+
 import '../../core/utils/decimal_utils.dart';
 import '../../data/models/transaction.dart';
 import 'providers/transaction_provider.dart';
@@ -10,6 +10,7 @@ import '../../shared/widgets/amount_input.dart';
 import '../../shared/widgets/category_selector.dart';
 import '../../shared/widgets/date_picker_field.dart';
 import '../../theme/app_radii.dart';
+import 'package:noova_finance/theme/app_theme.dart';
 
 /// Quick transaction registration: amount -> category -> date -> save.
 /// Max 3 taps from home (spec SC-001).
@@ -120,7 +121,7 @@ class _QuickAddModalState extends ConsumerState<QuickAddModal> {
               FilledButton(
                 onPressed: _isValid ? _save : null,
                 style: FilledButton.styleFrom(
-                  backgroundColor: isExpense ? NoovaTheme.expense : NoovaTheme.income,
+                  backgroundColor: isExpense ? context.app.colors.expense : context.app.colors.income,
                   foregroundColor: Colors.black,
                   padding: const EdgeInsets.symmetric(vertical: 14),
                 ),

@@ -2,12 +2,13 @@ import 'package:decimal/decimal.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../core/theme.dart';
+
 import '../../core/utils/money_format.dart';
 import '../../data/models/category.dart';
 import '../../data/models/transaction.dart';
 import '../../data/providers.dart';
 import 'budget_editor_sheet.dart';
+import 'package:noova_finance/theme/app_theme.dart';
 
 class _ParentBudget {
   final Category parent;
@@ -71,10 +72,10 @@ class BudgetsScreen extends ConsumerWidget {
                       const Text('Presupuesto global',
                           style: TextStyle(fontWeight: FontWeight.w600)),
                       Text(MoneyFormat.format(global),
-                          style: const TextStyle(
+                          style: TextStyle(
                               fontSize: 18,
                               fontWeight: FontWeight.bold,
-                              color: NoovaTheme.accent)),
+                              color: context.app.colors.primary)),
                     ],
                   ),
                 ),

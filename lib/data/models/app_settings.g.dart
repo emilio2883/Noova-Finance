@@ -126,7 +126,7 @@ AppSettings _appSettingsDeserialize(
     reminderEnabled: reader.readBoolOrNull(offsets[5]) ?? false,
     reminderHour: reader.readLongOrNull(offsets[6]) ?? 20,
     reminderMinute: reader.readLongOrNull(offsets[7]) ?? 0,
-    themeMode: reader.readStringOrNull(offsets[8]) ?? 'dark',
+    themeMode: reader.readStringOrNull(offsets[8]) ?? 'light',
   );
   object.id = id;
   return object;
@@ -156,7 +156,7 @@ P _appSettingsDeserializeProp<P>(
     case 7:
       return (reader.readLongOrNull(offset) ?? 0) as P;
     case 8:
-      return (reader.readStringOrNull(offset) ?? 'dark') as P;
+      return (reader.readStringOrNull(offset) ?? 'light') as P;
     default:
       throw IsarError('Unknown property with id $propertyId');
   }

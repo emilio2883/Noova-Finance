@@ -37,7 +37,7 @@ class AppSettings {
     this.reminderHour = 20,
     this.reminderMinute = 0,
     this.defaultCurrency = 'USD',
-    this.themeMode = 'dark',
+    this.themeMode = 'light',
     this.isImported = false,
     this.lastExportDate,
   });

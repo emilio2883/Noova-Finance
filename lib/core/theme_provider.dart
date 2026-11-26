@@ -6,7 +6,7 @@ import '../data/providers.dart';
 /// App-wide theme mode, persisted in AppSettings ('dark' | 'light').
 class ThemeModeNotifier extends StateNotifier<ThemeMode> {
   final Ref _ref;
-  ThemeModeNotifier(this._ref) : super(ThemeMode.dark) {
+  ThemeModeNotifier(this._ref) : super(ThemeMode.light) {
     _load();
   }
 

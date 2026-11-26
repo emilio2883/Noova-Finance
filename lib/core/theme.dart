@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../theme/app_colors.dart';
+import '../theme/app_motion.dart';
 import '../theme/app_radii.dart';
 import '../theme/app_theme.dart';
 
@@ -82,10 +83,45 @@ class NoovaTheme {
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(borderRadius: radii.brSm),
       ),
+      pageTransitionsTheme: const PageTransitionsTheme(builders: {
+        TargetPlatform.android: _FadeSlidePageTransitionsBuilder(),
+        TargetPlatform.iOS: _FadeSlidePageTransitionsBuilder(),
+        TargetPlatform.macOS: _FadeSlidePageTransitionsBuilder(),
+        TargetPlatform.windows: _FadeSlidePageTransitionsBuilder(),
+        TargetPlatform.linux: _FadeSlidePageTransitionsBuilder(),
+      }),
       extensions: [b == Brightness.dark ? AppTheme.dark : AppTheme.light],
     );
   }
 
   static ThemeData get darkTheme => _build(AppColors.dark, Brightness.dark);
   static ThemeData get lightTheme => _build(AppColors.light, Brightness.light);
+}
+
+/// Subtle fade + tiny vertical slide page transition driven by AppMotion tokens.
+class _FadeSlidePageTransitionsBuilder extends PageTransitionsBuilder {
+  const _FadeSlidePageTransitionsBuilder();
+
+  @override
+  Widget buildTransitions<T>(
+    PageRoute<T> route,
+    BuildContext context,
+    Animation<double> animation,
+    Animation<double> secondaryAnimation,
+    Widget child,
+  ) {
+    final curved = CurvedAnimation(
+      parent: animation,
+      curve: AppMotion.standardDecelerate,
+      reverseCurve: AppMotion.standardAccelerate,
+    );
+    final slide = Tween<Offset>(
+      begin: const Offset(0, 0.02),
+      end: Offset.zero,
+    ).animate(curved);
+    return FadeTransition(
+      opacity: curved,
+      child: SlideTransition(position: slide, child: child),
+    );
+  }
 }

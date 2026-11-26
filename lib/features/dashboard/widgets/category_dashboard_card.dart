@@ -7,6 +7,7 @@ import '../../../core/utils/money_format.dart';
 import '../../budgets/budget_editor_sheet.dart';
 import '../../transaction/quick_add_modal.dart';
 import '../providers/dashboard_provider.dart';
+import '../../../shared/widgets/animated_progress_bar.dart';
 import '../../../theme/app_radii.dart';
 
 /// One category dashboard card: name, amount, dynamic bar, budget rollup.
@@ -144,15 +145,13 @@ class CategoryDashboardCard extends ConsumerWidget {
                   ],
                 ),
                 const SizedBox(height: 8),
-                ClipRRect(
+                AnimatedProgressBar(
+                  value: _fraction,
+                  minHeight: 8,
                   borderRadius: AppRadii.standard.brXs,
-                  child: LinearProgressIndicator(
-                    value: _fraction,
-                    minHeight: 8,
-                    backgroundColor:
-                        Theme.of(context).colorScheme.surfaceContainerHighest,
-                    color: context.app.colors.expense,
-                  ),
+                  backgroundColor:
+                      Theme.of(context).colorScheme.surfaceContainerHighest,
+                  color: context.app.colors.expense,
                 ),
                 if (spend.hasBudget) ...[
                   const SizedBox(height: 8),
@@ -179,19 +178,17 @@ class CategoryDashboardCard extends ConsumerWidget {
                     ],
                   ),
                   const SizedBox(height: 4),
-                  ClipRRect(
+                  AnimatedProgressBar(
+                    value: (spend.percentUsed / 100).clamp(0.0, 1.0),
+                    minHeight: 5,
                     borderRadius: AppRadii.standard.brXs,
-                    child: LinearProgressIndicator(
-                      value: (spend.percentUsed / 100).clamp(0.0, 1.0),
-                      minHeight: 5,
-                      backgroundColor:
-                          Theme.of(context).colorScheme.surfaceContainerHighest,
-                      color: spend.percentUsed >= 100
-                          ? context.app.colors.expense
-                          : spend.percentUsed >= 80
-                              ? context.app.colors.warning
-                              : context.app.colors.primary,
-                    ),
+                    backgroundColor:
+                        Theme.of(context).colorScheme.surfaceContainerHighest,
+                    color: spend.percentUsed >= 100
+                        ? context.app.colors.expense
+                        : spend.percentUsed >= 80
+                            ? context.app.colors.warning
+                            : context.app.colors.primary,
                   ),
                 ],
               ],

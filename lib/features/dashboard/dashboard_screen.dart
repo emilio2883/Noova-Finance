@@ -10,6 +10,8 @@ import 'providers/dashboard_provider.dart';
 import 'widgets/category_dashboard_card.dart';
 import 'widgets/saldo_card.dart';
 import 'widgets/utilidad_card.dart';
+import '../../shared/widgets/animated_progress_bar.dart';
+import '../../theme/app_motion.dart';
 import '../../theme/app_radii.dart';
 
 /// Home: dynamic finance dashboard — saldo, monthly summary, global budget,
@@ -31,7 +33,11 @@ class DashboardScreen extends ConsumerWidget {
           ),
         ],
       ),
-      body: dashboardAsync.when(
+      body: AnimatedSwitcher(
+        duration: AppMotion.medium,
+        switchInCurve: AppMotion.standardDecelerate,
+        switchOutCurve: AppMotion.standardAccelerate,
+        child: dashboardAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (e, _) => Center(child: Text('Error: $e')),
         data: (d) {
@@ -90,6 +96,7 @@ class DashboardScreen extends ConsumerWidget {
           );
         },
       ),
+      ),
       bottomNavigationBar: const MainNavBar(location: '/dashboard'),
     );
   }
@@ -123,19 +130,17 @@ class _GlobalBudgetCard extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 8),
-            ClipRRect(
+            AnimatedProgressBar(
+              value: (pct / 100).clamp(0.0, 1.0),
+              minHeight: 8,
               borderRadius: AppRadii.standard.brXs,
-              child: LinearProgressIndicator(
-                value: (pct / 100).clamp(0.0, 1.0),
-                minHeight: 8,
-                backgroundColor:
-                    Theme.of(context).colorScheme.surfaceContainerHighest,
-                color: pct >= 100
-                    ? context.app.colors.expense
-                    : pct >= 80
-                        ? context.app.colors.warning
-                        : context.app.colors.primary,
-              ),
+              backgroundColor:
+                  Theme.of(context).colorScheme.surfaceContainerHighest,
+              color: pct >= 100
+                  ? context.app.colors.expense
+                  : pct >= 80
+                      ? context.app.colors.warning
+                      : context.app.colors.primary,
             ),
             const SizedBox(height: 4),
             Text('$pct% del presupuesto usado',

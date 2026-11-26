@@ -10,6 +10,7 @@ import '../../core/utils/money_format.dart';
 import '../../data/models/transaction.dart';
 import '../../data/providers.dart';
 import '../../data/services/saldo_calculator.dart';
+import '../../theme/app_radii.dart';
 
 /// Charts: expense bar chart + saldo line chart (US6).
 class ChartsScreen extends ConsumerWidget {
@@ -106,7 +107,7 @@ class _ExpenseBarChart extends ConsumerWidget {
                         backgroundColor: Theme.of(context).colorScheme.surfaceContainerHighest,
                         color: NoovaTheme.expense,
                         minHeight: 6,
-                        borderRadius: BorderRadius.circular(3),
+                        borderRadius: AppRadii.standard.brXs,
                       ),
                     ],
                   ),

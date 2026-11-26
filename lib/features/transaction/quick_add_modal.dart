@@ -9,6 +9,7 @@ import 'providers/transaction_provider.dart';
 import '../../shared/widgets/amount_input.dart';
 import '../../shared/widgets/category_selector.dart';
 import '../../shared/widgets/date_picker_field.dart';
+import '../../theme/app_radii.dart';
 
 /// Quick transaction registration: amount -> category -> date -> save.
 /// Max 3 taps from home (spec SC-001).
@@ -92,7 +93,7 @@ class _QuickAddModalState extends ConsumerState<QuickAddModal> {
               Container(
                 decoration: BoxDecoration(
                   color: Theme.of(context).colorScheme.surfaceContainerHighest,
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: AppRadii.standard.brMd,
                 ),
                 child: AmountInput(
                   onChanged: (v) => setState(() => _amountText = v),

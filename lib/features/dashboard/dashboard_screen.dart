@@ -10,6 +10,7 @@ import 'providers/dashboard_provider.dart';
 import 'widgets/category_dashboard_card.dart';
 import 'widgets/saldo_card.dart';
 import 'widgets/utilidad_card.dart';
+import '../../theme/app_radii.dart';
 
 /// Home: dynamic finance dashboard — saldo, monthly summary, global budget,
 /// and per-category dashboards (bars sorted by spending).
@@ -123,7 +124,7 @@ class _GlobalBudgetCard extends StatelessWidget {
             ),
             const SizedBox(height: 8),
             ClipRRect(
-              borderRadius: BorderRadius.circular(4),
+              borderRadius: AppRadii.standard.brXs,
               child: LinearProgressIndicator(
                 value: (pct / 100).clamp(0.0, 1.0),
                 minHeight: 8,

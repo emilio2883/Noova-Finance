@@ -9,7 +9,8 @@ import 'dart:io';
 
 final _rules = <String, RegExp>{
   'Color(0x': RegExp(r'Color\(0x'),
-  'Duration(': RegExp(r'Duration\('),
+  // Only flag Duration used as an animation property, not logic (Timer/date math).
+  'duration: Duration(': RegExp(r'duration:\s*(?:const\s+)?Duration\('),
   'BorderRadius.circular(<num>)': RegExp(r'BorderRadius\.circular\(\s*\d'),
   // Warn-only (style smells):
   'EdgeInsets.all(<num>)': RegExp(r'EdgeInsets\.all\(\s*\d'),

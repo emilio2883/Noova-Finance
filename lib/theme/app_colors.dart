@@ -1,8 +1,20 @@
 import 'package:flutter/material.dart';
 
+// ── Top-level palette constants (const-accessible single source of truth) ──
+const Color kDarkBackground = Color(0xFF071C2C);
+const Color kDarkSurface = Color(0xFF0E2A40);
+const Color kDarkSurfaceVariant = Color(0xFF123A57);
+const Color kDarkCard = Color(0xFF0D2740);
+const Color kDarkPrimary = Color(0xFF35C7EE);
+const Color kDarkMint = Color(0xFF3DDC97); // income/success
+const Color kDarkExpense = Color(0xFFFF6B6B);
+const Color kDarkWarning = Color(0xFFF6C453);
+const Color kDarkTextPrimary = Color(0xFFEAF1F6);
+const Color kDarkTextSecondary = Color(0xFF93A7B8);
+
 /// Semantic color tokens. Immutable, const-friendly, theme-aware.
-/// Palette mirrors the Noova "Look and Feel" reference: a deep-navy hero over a
-/// light body, coral for CTAs/alerts, cyan accent, mint income. Raw Color(0x…)
+/// Palette mirrors the Noova "Look and Feel" reference: deep-navy hero over a
+/// light body, coral CTAs/alerts, cyan accent, mint income. Raw Color(0x…)
 /// values live ONLY in the theme package.
 @immutable
 class AppColors {
@@ -10,15 +22,10 @@ class AppColors {
   final Color surface;
   final Color surfaceVariant;
   final Color card;
-
-  /// Interactive accent (cyan in both themes).
   final Color primary;
   final Color secondary;
-
-  /// Deep-navy hero surface (dark header area) + its foreground.
   final Color hero;
   final Color onHero;
-
   final Color income;
   final Color expense;
   final Color warning;
@@ -59,13 +66,13 @@ class AppColors {
     surface: Color(0xFFFFFFFF),
     surfaceVariant: Color(0xFFEEF1F5),
     card: Color(0xFFFFFFFF),
-    primary: Color(0xFF12A8D8), // cyan link/accent
-    secondary: Color(0xFF22A06B), // green
-    hero: Color(0xFF0B2C45), // deep navy hero
+    primary: Color(0xFF12A8D8),
+    secondary: Color(0xFF22A06B),
+    hero: Color(0xFF0B2C45),
     onHero: Color(0xFFFFFFFF),
     income: Color(0xFF22A06B),
-    expense: Color(0xFFFA6F76), // coral CTA/alert
-    warning: Color(0xFFF05A3C), // flame/overdue
+    expense: Color(0xFFFA6F76),
+    warning: Color(0xFFF05A3C),
     success: Color(0xFF22A06B),
     danger: Color(0xFFFA6F76),
     textPrimary: Color(0xFF0B2135),
@@ -78,21 +85,21 @@ class AppColors {
 
   /// Dark theme (Noova navy — default brand look).
   static const AppColors dark = AppColors(
-    background: Color(0xFF071C2C),
-    surface: Color(0xFF0E2A40),
-    surfaceVariant: Color(0xFF123A57),
-    card: Color(0xFF0D2740),
-    primary: Color(0xFF35C7EE), // cyan accent
-    secondary: Color(0xFF3DDC97),
-    hero: Color(0xFF0D2740),
-    onHero: Color(0xFFEAF1F6),
-    income: Color(0xFF3DDC97), // mint
-    expense: Color(0xFFFF6B6B),
-    warning: Color(0xFFF6C453),
-    success: Color(0xFF3DDC97),
-    danger: Color(0xFFFF6B6B),
-    textPrimary: Color(0xFFEAF1F6),
-    textSecondary: Color(0xFF93A7B8),
+    background: kDarkBackground,
+    surface: kDarkSurface,
+    surfaceVariant: kDarkSurfaceVariant,
+    card: kDarkCard,
+    primary: kDarkPrimary,
+    secondary: kDarkMint,
+    hero: kDarkCard,
+    onHero: kDarkTextPrimary,
+    income: kDarkMint,
+    expense: kDarkExpense,
+    warning: kDarkWarning,
+    success: kDarkMint,
+    danger: kDarkExpense,
+    textPrimary: kDarkTextPrimary,
+    textSecondary: kDarkTextSecondary,
     textOnPrimary: Color(0xFF04121D),
     divider: Color(0xFF12354E),
     border: Color(0xFF1C4A6B),

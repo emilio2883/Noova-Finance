@@ -7,6 +7,7 @@ import '../../../core/utils/money_format.dart';
 import '../../budgets/budget_editor_sheet.dart';
 import '../../transaction/quick_add_modal.dart';
 import '../providers/dashboard_provider.dart';
+import '../../../theme/app_radii.dart';
 
 /// One category dashboard card: name, amount, dynamic bar, budget rollup.
 /// Tap -> detail sheet. Swipe down -> add expense, swipe up -> edit budgets.
@@ -131,7 +132,7 @@ class CategoryDashboardCard extends ConsumerWidget {
       },
       child: Card(
         child: InkWell(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: AppRadii.standard.brMd,
           onTap: () => _openDetail(context),
           child: Padding(
             padding: const EdgeInsets.all(14),
@@ -153,7 +154,7 @@ class CategoryDashboardCard extends ConsumerWidget {
                 ),
                 const SizedBox(height: 8),
                 ClipRRect(
-                  borderRadius: BorderRadius.circular(4),
+                  borderRadius: AppRadii.standard.brXs,
                   child: LinearProgressIndicator(
                     value: _fraction,
                     minHeight: 8,
@@ -188,7 +189,7 @@ class CategoryDashboardCard extends ConsumerWidget {
                   ),
                   const SizedBox(height: 4),
                   ClipRRect(
-                    borderRadius: BorderRadius.circular(3),
+                    borderRadius: AppRadii.standard.brXs,
                     child: LinearProgressIndicator(
                       value: (spend.percentUsed / 100).clamp(0.0, 1.0),
                       minHeight: 5,

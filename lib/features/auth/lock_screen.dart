@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../../core/theme.dart';
+import '../../theme/app_radii.dart';
 
 /// PIN/biometric lock screen (US8). 3 strikes -> 30s cooldown.
 class LockScreen extends StatefulWidget {
@@ -140,7 +141,7 @@ class _LockScreenState extends State<LockScreen> {
       padding: const EdgeInsets.all(8),
       child: InkWell(
         onTap: _locked ? null : () => _onDigit(digit),
-        borderRadius: BorderRadius.circular(40),
+        borderRadius: AppRadii.standard.brPill,
         child: Container(
           width: 64,
           height: 64,
@@ -165,7 +166,7 @@ class _LockScreenState extends State<LockScreen> {
         onTap: _locked || _entered.isEmpty
             ? null
             : () => setState(() => _entered = _entered.substring(0, _entered.length - 1)),
-        borderRadius: BorderRadius.circular(40),
+        borderRadius: AppRadii.standard.brPill,
         child: const SizedBox(
           width: 64,
           height: 64,

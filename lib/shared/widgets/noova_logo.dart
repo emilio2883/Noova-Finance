@@ -2,13 +2,14 @@ import 'package:flutter/material.dart';
 
 import 'package:noova_finance/theme/app_theme.dart';
 
-/// The Noova "N" brand mark, rendered as text so it stays crisp at any size
-/// (no image asset needed). Used in the header and as the centre nav button.
+/// The Noova brand mark used as the centre nav button. Rendered as a glyph in
+/// the logo colours (navy background, white letter).
 class NoovaMark extends StatelessWidget {
   final double size;
   final Color background;
   final Color foreground;
   final bool circle;
+  final String letter;
 
   const NoovaMark({
     super.key,
@@ -16,6 +17,7 @@ class NoovaMark extends StatelessWidget {
     required this.background,
     required this.foreground,
     this.circle = false,
+    this.letter = 'N',
   });
 
   @override
@@ -25,15 +27,16 @@ class NoovaMark extends StatelessWidget {
       height: size,
       decoration: BoxDecoration(
         color: background,
-        borderRadius:
-            circle ? BorderRadius.all(Radius.circular(size / 2)) : BorderRadius.all(Radius.circular(size * 0.28)),
+        borderRadius: circle
+            ? BorderRadius.all(Radius.circular(size / 2))
+            : BorderRadius.all(Radius.circular(size * 0.28)),
         boxShadow: const [
           BoxShadow(color: Colors.black26, blurRadius: 8, offset: Offset(0, 3)),
         ],
       ),
       child: Center(
         child: Text(
-          'N',
+          letter,
           style: TextStyle(
             color: foreground,
             fontWeight: FontWeight.w800,
@@ -47,28 +50,22 @@ class NoovaMark extends StatelessWidget {
   }
 }
 
-/// Header title: Noova mark + wordmark, tuned for a navy AppBar.
+/// Header title: the original Noova app logo (white wordmark on navy).
 class NoovaHeader extends StatelessWidget {
   const NoovaHeader({super.key});
 
   @override
   Widget build(BuildContext context) {
     final c = context.app.colors;
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        NoovaMark(size: 26, background: c.primary, foreground: c.textOnPrimary),
-        const SizedBox(width: 10),
-        Text(
-          'Noova',
-          style: TextStyle(
-            color: c.onHero,
-            fontWeight: FontWeight.w700,
-            fontSize: 20,
-            letterSpacing: 0.3,
-          ),
-        ),
-      ],
+    return ClipRRect(
+      borderRadius: BorderRadius.all(Radius.circular(8)),
+      child: Image.asset(
+        'assets/icon/app_icon.png',
+        height: 30,
+        fit: BoxFit.cover,
+        errorBuilder: (_, __, ___) =>
+            NoovaMark(size: 26, background: c.hero, foreground: c.onHero),
+      ),
     );
   }
 }

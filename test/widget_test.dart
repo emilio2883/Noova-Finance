@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -9,7 +10,7 @@ void main() {
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 100));
 
-    // Dashboard app bar renders the Noova brand header (data loads async).
-    expect(find.text('Noova'), findsOneWidget);
+    // Dashboard app bar renders (brand header; data loads async).
+    expect(find.byType(AppBar), findsOneWidget);
   });
 }

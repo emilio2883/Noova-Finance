@@ -4,7 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:noova_finance/theme/app_theme.dart';
 import 'noova_logo.dart';
 
-/// Bottom navigation: Quincena · Gráficos · [N Inicio] · Ajustes.
+/// Bottom navigation: Quincena · Gráficos · [N Inicio] · Metas · Ajustes.
 /// The centre button is the Noova "N" and navigates home.
 class MainNavBar extends StatelessWidget {
   final String location;
@@ -49,6 +49,15 @@ class MainNavBar extends StatelessWidget {
               ),
               Expanded(
                 child: _NavItem(
+                  icon: Icons.savings_outlined,
+                  activeIcon: Icons.savings,
+                  label: 'Metas',
+                  selected: location.startsWith('/goals'),
+                  onTap: () => context.go('/goals'),
+                ),
+              ),
+              Expanded(
+                child: _NavItem(
                   icon: Icons.settings_outlined,
                   activeIcon: Icons.settings,
                   label: 'Ajustes',
@@ -56,7 +65,6 @@ class MainNavBar extends StatelessWidget {
                   onTap: () => context.go('/settings'),
                 ),
               ),
-              const Expanded(child: SizedBox()),
             ],
           ),
         ),
@@ -128,8 +136,9 @@ class _CenterHome extends StatelessWidget {
               child: NoovaMark(
                 size: 52,
                 circle: true,
-                background: c.primary,
-                foreground: c.textOnPrimary,
+                letter: 'N',
+                background: c.hero,
+                foreground: c.onHero,
               ),
             ),
           ),

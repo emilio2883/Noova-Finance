@@ -1,7 +1,6 @@
 import 'package:decimal/decimal.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 
 import 'package:noova_finance/theme/app_theme.dart';
 import '../../shared/ui/error_state.dart';
@@ -30,13 +29,6 @@ class DashboardScreen extends ConsumerWidget {
     return Scaffold(
       appBar: AppBar(
         title: const NoovaHeader(),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.savings_outlined),
-            tooltip: 'Metas de ahorro',
-            onPressed: () => context.push('/goals'),
-          ),
-        ],
       ),
       body: AnimatedSwitcher(
         duration: AppMotion.medium,

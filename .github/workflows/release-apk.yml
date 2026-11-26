@@ -18,6 +18,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          fetch-tags: true
 
       - name: Set up JDK 17
         uses: actions/setup-java@v4
@@ -42,11 +43,19 @@ jobs:
           printf 'storePassword=%s\nkeyPassword=%s\nkeyAlias=%s\nstoreFile=upload-keystore.jks\n' \
             "$KEYSTORE_PASSWORD" "$KEY_PASSWORD" "$KEY_ALIAS" > android/key.properties
 
-      - name: Read base version
+      - name: Compute next version
         id: ver
         run: |
-          base=$(grep '^version:' pubspec.yaml | sed 's/version: //; s/+.*//')
-          echo "base=$base" >> "$GITHUB_OUTPUT"
+          latest=$(git tag -l 'v*' --sort=-v:refname | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' | head -n1)
+          if [ -z "$latest" ]; then
+            base=$(grep '^version:' pubspec.yaml | sed 's/version: //; s/+.*//')
+            major=$(echo "$base" | cut -d. -f1); minor=$(echo "$base" | cut -d. -f2); patch=$(echo "$base" | cut -d. -f3)
+          else
+            v=${latest#v}; major=$(echo "$v" | cut -d. -f1); minor=$(echo "$v" | cut -d. -f2); patch=$(echo "$v" | cut -d. -f3)
+          fi
+          next="${major}.${minor}.$((patch+1))"
+          echo "next=$next" >> "$GITHUB_OUTPUT"
+          echo "Next version: v$next"
 
       - name: Install dependencies
         run: flutter pub get
@@ -54,14 +63,14 @@ jobs:
       - name: Build release APK
         run: >
           flutter build apk --release
-          --build-name=${{ steps.ver.outputs.base }}.${{ github.run_number }}
+          --build-name=${{ steps.ver.outputs.next }}
           --build-number=${{ github.run_number }}
 
       - name: Publish GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: v${{ steps.ver.outputs.base }}-b${{ github.run_number }}
-          name: "v${{ steps.ver.outputs.base }} (build ${{ github.run_number }})"
+          tag_name: v${{ steps.ver.outputs.next }}
+          name: "v${{ steps.ver.outputs.next }}"
           files: build/app/outputs/flutter-apk/app-release.apk
           generate_release_notes: true
           fail_on_unmatched_files: true

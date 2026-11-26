@@ -7,6 +7,7 @@ import '../../core/utils/decimal_utils.dart';
 import '../../core/utils/money_format.dart';
 import '../../data/models/savings_goal.dart';
 import '../../data/providers.dart';
+import 'goals_providers.dart';
 import '../../shared/ui/empty_state.dart';
 import '../../shared/ui/error_state.dart';
 import '../../shared/ui/loading_state.dart';
@@ -14,19 +15,13 @@ import '../../shared/widgets/animated_progress_bar.dart';
 import '../../theme/app_radii.dart';
 import '../../theme/app_theme.dart';
 
-/// Active savings goals (Monzo Pots style).
-final savingsGoalsProvider =
-    FutureProvider.autoDispose<List<SavingsGoal>>((ref) async {
-  final repo = await ref.watch(savingsGoalRepoProvider.future);
-  return repo.getActive();
-});
-
 class GoalsScreen extends ConsumerWidget {
   const GoalsScreen({super.key});
 
   Future<void> _create(BuildContext context, WidgetRef ref) async {
     final nameCtrl = TextEditingController();
     final targetCtrl = TextEditingController();
+    final monthsCtrl = TextEditingController();
     final created = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
@@ -43,6 +38,12 @@ class GoalsScreen extends ConsumerWidget {
                 controller: targetCtrl,
                 keyboardType: TextInputType.number,
                 decoration: const InputDecoration(labelText: 'Monto objetivo')),
+            const SizedBox(height: 8),
+            TextField(
+                controller: monthsCtrl,
+                keyboardType: TextInputType.number,
+                decoration: const InputDecoration(
+                    labelText: 'Periodo en meses (opcional)')),
           ],
         ),
         actions: [
@@ -60,7 +61,11 @@ class GoalsScreen extends ConsumerWidget {
     final name = nameCtrl.text.trim();
     if (target == null || target <= Decimal.zero || name.isEmpty) return;
     final repo = await ref.read(savingsGoalRepoProvider.future);
-    await repo.insert(SavingsGoal(name: name, targetBps: DecimalUtils.toBps(target)));
+    final months = int.tryParse(monthsCtrl.text.trim()) ?? 0;
+    await repo.insert(SavingsGoal(
+        name: name,
+        targetBps: DecimalUtils.toBps(target),
+        periodMonths: months));
     ref.invalidate(savingsGoalsProvider);
   }
 
@@ -189,8 +194,17 @@ class _GoalCard extends StatelessWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text('${MoneyFormat.format(saved)} de ${MoneyFormat.format(target)}',
-                    style: TextStyle(fontSize: 12, color: c.textSecondary)),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('${MoneyFormat.format(saved)} de ${MoneyFormat.format(target)}',
+                        style: TextStyle(fontSize: 12, color: c.textSecondary)),
+                    if (goal.periodMonths > 0)
+                      Text(
+                          'Aporte: ${MoneyFormat.format(DecimalUtils.fromBps(goal.targetBps ~/ goal.periodMonths))}/mes · ${goal.periodMonths} meses',
+                          style: TextStyle(fontSize: 11, color: c.textSecondary)),
+                  ],
+                ),
                 TextButton.icon(
                     onPressed: onContribute,
                     icon: const Icon(Icons.add, size: 16),

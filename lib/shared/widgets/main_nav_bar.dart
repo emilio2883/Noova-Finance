@@ -4,8 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:noova_finance/theme/app_theme.dart';
 import 'noova_logo.dart';
 
-/// Bottom navigation: Quincena · Gráficos · [N Inicio] · Metas · Ajustes.
-/// The centre button is the Noova "N" and navigates home.
+/// Bottom navigation: Consumo · Presupuestos · [N Inicio] · Metas · Ajustes.
 class MainNavBar extends StatelessWidget {
   final String location;
 
@@ -27,20 +26,20 @@ class MainNavBar extends StatelessWidget {
             children: [
               Expanded(
                 child: _NavItem(
-                  icon: Icons.grid_view_outlined,
-                  activeIcon: Icons.grid_view,
-                  label: 'Quincena',
+                  icon: Icons.receipt_long_outlined,
+                  activeIcon: Icons.receipt_long,
+                  label: 'Consumo',
                   selected: location.startsWith('/quincenal'),
                   onTap: () => context.go('/quincenal'),
                 ),
               ),
               Expanded(
                 child: _NavItem(
-                  icon: Icons.bar_chart_outlined,
-                  activeIcon: Icons.bar_chart,
-                  label: 'Gráficos',
-                  selected: location.startsWith('/charts'),
-                  onTap: () => context.go('/charts'),
+                  icon: Icons.pie_chart_outline,
+                  activeIcon: Icons.pie_chart,
+                  label: 'Presupuestos',
+                  selected: location.startsWith('/budgets'),
+                  onTap: () => context.go('/budgets'),
                 ),
               ),
               _CenterHome(
@@ -101,10 +100,14 @@ class _NavItem extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(selected ? activeIcon : icon, color: color, size: 24),
+            Icon(selected ? activeIcon : icon, color: color, size: 22),
             const SizedBox(height: 2),
-            Text(label,
-                style: TextStyle(fontSize: 11, color: color, fontWeight: FontWeight.w500)),
+            FittedBox(
+              fit: BoxFit.scaleDown,
+              child: Text(label,
+                  style: TextStyle(
+                      fontSize: 10, color: color, fontWeight: FontWeight.w500)),
+            ),
           ],
         ),
       ),
@@ -120,7 +123,6 @@ class _CenterHome extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final c = context.app.colors;
     return Semantics(
       button: true,
       selected: selected,
@@ -133,13 +135,7 @@ class _CenterHome extends StatelessWidget {
           child: Center(
             child: Transform.translate(
               offset: const Offset(0, -8),
-              child: NoovaMark(
-                size: 52,
-                circle: true,
-                letter: 'N',
-                background: c.hero,
-                foreground: c.onHero,
-              ),
+              child: const NoovaMarkImage(size: 52),
             ),
           ),
         ),

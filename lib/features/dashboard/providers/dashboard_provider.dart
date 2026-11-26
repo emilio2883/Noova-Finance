@@ -50,6 +50,9 @@ class DashboardData {
   final Decimal ingresosMes;
   final Decimal gastosMes;
   final Decimal utilidadMes;
+  final Decimal ingresosAnio;
+  final Decimal gastosAnio;
+  final Decimal utilidadAnio;
   final List<CategorySpend> categorySpending; // sorted desc by total
   final Decimal globalBudget;
   final Decimal globalSpent; // spent within budgeted categories this quincena
@@ -60,6 +63,9 @@ class DashboardData {
     required this.ingresosMes,
     required this.gastosMes,
     required this.utilidadMes,
+    required this.ingresosAnio,
+    required this.gastosAnio,
+    required this.utilidadAnio,
     required this.categorySpending,
     required this.globalBudget,
     required this.globalSpent,
@@ -77,6 +83,8 @@ final dashboardProvider = FutureProvider.autoDispose<DashboardData>((ref) async 
   final all = await txnRepo.getAll();
   final monthStart = QuincenaUtils.monthStart(now);
   final monthEnd = QuincenaUtils.monthEnd(now);
+  final yStart = QuincenaUtils.yearStart(now);
+  final yEnd = QuincenaUtils.yearEnd(now);
   final qStart = QuincenaUtils.quincenaStart(now);
   final qEnd = QuincenaUtils.quincenaEnd(now);
 
@@ -137,6 +145,9 @@ final dashboardProvider = FutureProvider.autoDispose<DashboardData>((ref) async 
     ingresosMes: SaldoCalculator.ingresos(all, monthStart, monthEnd),
     gastosMes: SaldoCalculator.gastos(all, monthStart, monthEnd),
     utilidadMes: SaldoCalculator.utilidad(all, monthStart, monthEnd),
+    ingresosAnio: SaldoCalculator.ingresos(all, yStart, yEnd),
+    gastosAnio: SaldoCalculator.gastos(all, yStart, yEnd),
+    utilidadAnio: SaldoCalculator.utilidad(all, yStart, yEnd),
     categorySpending: categorySpending,
     globalBudget: globalBudget,
     globalSpent: globalSpent,

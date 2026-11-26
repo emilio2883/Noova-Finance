@@ -6,6 +6,9 @@ import 'package:noova_finance/theme/app_theme.dart';
 import '../../shared/ui/error_state.dart';
 import '../../shared/ui/loading_state.dart';
 import '../../shared/widgets/noova_logo.dart';
+import '../../shared/widgets/profile_greeting.dart';
+import '../../core/utils/decimal_utils.dart';
+import '../goals/goals_providers.dart';
 import 'insights.dart';
 import '../../core/utils/money_format.dart';
 import '../../shared/widgets/main_nav_bar.dart';
@@ -28,7 +31,11 @@ class DashboardScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const NoovaHeader(),
+        automaticallyImplyLeading: false,
+        centerTitle: false,
+        titleSpacing: 14,
+        title: const NoovaLogoImage(),
+        actions: const [ProfileGreeting(), SizedBox(width: 12)],
       ),
       body: AnimatedSwitcher(
         duration: AppMotion.medium,
@@ -50,12 +57,13 @@ class DashboardScreen extends ConsumerWidget {
               children: [
                 SaldoCard(saldoFormatted: MoneyFormat.format(d.saldo)),
                 UtilidadCard(
-                  ingresos: MoneyFormat.compact(d.ingresosMes),
-                  gastos: MoneyFormat.compact(d.gastosMes),
-                  utilidad: MoneyFormat.compact(d.utilidadMes),
-                  utilidadPositiva: d.utilidadMes >= Decimal.zero,
+                  ingresos: MoneyFormat.compact(d.ingresosAnio),
+                  gastos: MoneyFormat.compact(d.gastosAnio),
+                  utilidad: MoneyFormat.compact(d.utilidadAnio),
+                  utilidadPositiva: d.utilidadAnio >= Decimal.zero,
                 ),
                 if (d.globalBudget > Decimal.zero) _GlobalBudgetCard(data: d),
+                const _GoalsSummary(),
                 _InsightsSection(insights: buildInsights(d)),
                 Padding(
                   padding: const EdgeInsets.fromLTRB(20, 16, 20, 4),
@@ -221,6 +229,76 @@ class _InsightCard extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+}
+
+/// Compact savings-goals summary shown on the dashboard when goals exist.
+class _GoalsSummary extends ConsumerWidget {
+  const _GoalsSummary();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final async = ref.watch(savingsGoalsProvider);
+    return async.maybeWhen(
+      data: (goals) {
+        if (goals.isEmpty) return const SizedBox.shrink();
+        final c = context.app.colors;
+        final totalTarget = goals.fold<int>(0, (a, g) => a + g.targetBps);
+        final totalSaved = goals.fold<int>(0, (a, g) => a + g.savedBps);
+        final pct = totalTarget <= 0
+            ? 0.0
+            : (totalSaved / totalTarget).clamp(0.0, 1.0).toDouble();
+        return Padding(
+          padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('METAS DE AHORRO',
+                  style: TextStyle(
+                      color: c.textSecondary, fontSize: 12, letterSpacing: 1.5)),
+              const SizedBox(height: 8),
+              Card(
+                child: Padding(
+                  padding: const EdgeInsets.all(14),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                              '${MoneyFormat.format(DecimalUtils.fromBps(totalSaved))} de ${MoneyFormat.format(DecimalUtils.fromBps(totalTarget))}',
+                              style: const TextStyle(
+                                  fontWeight: FontWeight.w600, fontSize: 13)),
+                          Text('${(pct * 100).round()}%',
+                              style: TextStyle(
+                                  color: c.textSecondary,
+                                  fontWeight: FontWeight.bold)),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                      AnimatedProgressBar(
+                        value: pct,
+                        minHeight: 8,
+                        borderRadius: AppRadii.standard.brXs,
+                        backgroundColor:
+                            Theme.of(context).colorScheme.surfaceContainerHighest,
+                        color: c.income,
+                      ),
+                      const SizedBox(height: 6),
+                      Text('${goals.length} meta(s) activa(s)',
+                          style:
+                              TextStyle(fontSize: 11, color: c.textSecondary)),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+      orElse: () => const SizedBox.shrink(),
     );
   }
 }

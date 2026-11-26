@@ -47,13 +47,18 @@ const SavingsGoalSchema = CollectionSchema(
       name: r'name',
       type: IsarType.string,
     ),
-    r'savedBps': PropertySchema(
+    r'periodMonths': PropertySchema(
       id: 6,
+      name: r'periodMonths',
+      type: IsarType.long,
+    ),
+    r'savedBps': PropertySchema(
+      id: 7,
       name: r'savedBps',
       type: IsarType.long,
     ),
     r'targetBps': PropertySchema(
-      id: 7,
+      id: 8,
       name: r'targetBps',
       type: IsarType.long,
     )
@@ -95,8 +100,9 @@ void _savingsGoalSerialize(
   writer.writeString(offsets[3], object.iconName);
   writer.writeBool(offsets[4], object.isActive);
   writer.writeString(offsets[5], object.name);
-  writer.writeLong(offsets[6], object.savedBps);
-  writer.writeLong(offsets[7], object.targetBps);
+  writer.writeLong(offsets[6], object.periodMonths);
+  writer.writeLong(offsets[7], object.savedBps);
+  writer.writeLong(offsets[8], object.targetBps);
 }
 
 SavingsGoal _savingsGoalDeserialize(
@@ -112,8 +118,9 @@ SavingsGoal _savingsGoalDeserialize(
     iconName: reader.readStringOrNull(offsets[3]) ?? 'savings',
     isActive: reader.readBoolOrNull(offsets[4]) ?? true,
     name: reader.readString(offsets[5]),
-    savedBps: reader.readLongOrNull(offsets[6]) ?? 0,
-    targetBps: reader.readLong(offsets[7]),
+    periodMonths: reader.readLongOrNull(offsets[6]) ?? 0,
+    savedBps: reader.readLongOrNull(offsets[7]) ?? 0,
+    targetBps: reader.readLong(offsets[8]),
   );
   object.id = id;
   return object;
@@ -141,6 +148,8 @@ P _savingsGoalDeserializeProp<P>(
     case 6:
       return (reader.readLongOrNull(offset) ?? 0) as P;
     case 7:
+      return (reader.readLongOrNull(offset) ?? 0) as P;
+    case 8:
       return (reader.readLong(offset)) as P;
     default:
       throw IsarError('Unknown property with id $propertyId');
@@ -772,6 +781,62 @@ extension SavingsGoalQueryFilter
     });
   }
 
+  QueryBuilder<SavingsGoal, SavingsGoal, QAfterFilterCondition>
+      periodMonthsEqualTo(int value) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'periodMonths',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<SavingsGoal, SavingsGoal, QAfterFilterCondition>
+      periodMonthsGreaterThan(
+    int value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'periodMonths',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<SavingsGoal, SavingsGoal, QAfterFilterCondition>
+      periodMonthsLessThan(
+    int value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'periodMonths',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<SavingsGoal, SavingsGoal, QAfterFilterCondition>
+      periodMonthsBetween(
+    int lower,
+    int upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'periodMonths',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+      ));
+    });
+  }
+
   QueryBuilder<SavingsGoal, SavingsGoal, QAfterFilterCondition> savedBpsEqualTo(
       int value) {
     return QueryBuilder.apply(this, (query) {
@@ -964,6 +1029,19 @@ extension SavingsGoalQuerySortBy
     });
   }
 
+  QueryBuilder<SavingsGoal, SavingsGoal, QAfterSortBy> sortByPeriodMonths() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'periodMonths', Sort.asc);
+    });
+  }
+
+  QueryBuilder<SavingsGoal, SavingsGoal, QAfterSortBy>
+      sortByPeriodMonthsDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'periodMonths', Sort.desc);
+    });
+  }
+
   QueryBuilder<SavingsGoal, SavingsGoal, QAfterSortBy> sortBySavedBps() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'savedBps', Sort.asc);
@@ -1075,6 +1153,19 @@ extension SavingsGoalQuerySortThenBy
     });
   }
 
+  QueryBuilder<SavingsGoal, SavingsGoal, QAfterSortBy> thenByPeriodMonths() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'periodMonths', Sort.asc);
+    });
+  }
+
+  QueryBuilder<SavingsGoal, SavingsGoal, QAfterSortBy>
+      thenByPeriodMonthsDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'periodMonths', Sort.desc);
+    });
+  }
+
   QueryBuilder<SavingsGoal, SavingsGoal, QAfterSortBy> thenBySavedBps() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'savedBps', Sort.asc);
@@ -1140,6 +1231,12 @@ extension SavingsGoalQueryWhereDistinct
     });
   }
 
+  QueryBuilder<SavingsGoal, SavingsGoal, QDistinct> distinctByPeriodMonths() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'periodMonths');
+    });
+  }
+
   QueryBuilder<SavingsGoal, SavingsGoal, QDistinct> distinctBySavedBps() {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'savedBps');
@@ -1194,6 +1291,12 @@ extension SavingsGoalQueryProperty
   QueryBuilder<SavingsGoal, String, QQueryOperations> nameProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'name');
+    });
+  }
+
+  QueryBuilder<SavingsGoal, int, QQueryOperations> periodMonthsProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'periodMonths');
     });
   }
 

@@ -12,6 +12,9 @@ class SavingsGoal {
   int targetBps;
   int savedBps;
 
+  /// Planned period in months (0 = open-ended). Used to compute monthly aporte.
+  int periodMonths;
+
   /// ARGB color for the goal accent.
   int colorArgb;
 
@@ -26,6 +29,7 @@ class SavingsGoal {
     required this.name,
     required this.targetBps,
     this.savedBps = 0,
+    this.periodMonths = 0,
     this.colorArgb = 0xFF22A06B,
     this.iconName = 'savings',
     this.deadline,

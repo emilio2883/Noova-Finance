@@ -29,6 +29,9 @@ class AppSettings {
   /// the app follows the brand default (light), ignoring a stale stored value.
   bool themeChoiceMade;
 
+  /// Optional display name for the profile greeting.
+  String? userName;
+
   /// Has historical Excel data been imported
   bool isImported;
 
@@ -43,6 +46,7 @@ class AppSettings {
     this.defaultCurrency = 'USD',
     this.themeMode = 'light',
     this.themeChoiceMade = false,
+    this.userName,
     this.isImported = false,
     this.lastExportDate,
   });

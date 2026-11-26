@@ -4,6 +4,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:noova_finance/theme/app_theme.dart';
+import '../../shared/ui/error_state.dart';
+import '../../shared/ui/loading_state.dart';
+import 'insights.dart';
 import '../../core/utils/money_format.dart';
 import '../../shared/widgets/main_nav_bar.dart';
 import 'providers/dashboard_provider.dart';
@@ -28,6 +31,11 @@ class DashboardScreen extends ConsumerWidget {
         title: const Text('Noova Finance'),
         actions: [
           IconButton(
+            icon: const Icon(Icons.savings_outlined),
+            tooltip: 'Metas de ahorro',
+            onPressed: () => context.push('/goals'),
+          ),
+          IconButton(
             icon: const Icon(Icons.settings_outlined),
             onPressed: () => context.go('/settings'),
           ),
@@ -38,8 +46,8 @@ class DashboardScreen extends ConsumerWidget {
         switchInCurve: AppMotion.standardDecelerate,
         switchOutCurve: AppMotion.standardAccelerate,
         child: dashboardAsync.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, _) => Center(child: Text('Error: $e')),
+        loading: () => const LoadingState(),
+        error: (e, _) => ErrorState(message: 'No pudimos cargar tu dashboard.', onRetry: () => ref.invalidate(dashboardProvider)),
         data: (d) {
           final spends = d.categorySpending
               .where((s) => s.total > Decimal.zero)
@@ -59,6 +67,7 @@ class DashboardScreen extends ConsumerWidget {
                   utilidadPositiva: d.utilidadMes >= Decimal.zero,
                 ),
                 if (d.globalBudget > Decimal.zero) _GlobalBudgetCard(data: d),
+                _InsightsSection(insights: buildInsights(d)),
                 Padding(
                   padding: const EdgeInsets.fromLTRB(20, 16, 20, 4),
                   child: Row(
@@ -146,6 +155,80 @@ class _GlobalBudgetCard extends StatelessWidget {
             Text('$pct% del presupuesto usado',
                 style: TextStyle(
                     fontSize: 11, color: context.app.colors.textSecondary)),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Horizontal-free list of insight cards shown under the budget card.
+class _InsightsSection extends StatelessWidget {
+  final List<Insight> insights;
+  const _InsightsSection({required this.insights});
+
+  @override
+  Widget build(BuildContext context) {
+    if (insights.isEmpty) return const SizedBox.shrink();
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.only(left: 4, bottom: 8),
+            child: Text('INSIGHTS',
+                style: TextStyle(
+                    color: context.app.colors.textSecondary,
+                    fontSize: 12,
+                    letterSpacing: 1.5)),
+          ),
+          for (final i in insights) _InsightCard(insight: i),
+        ],
+      ),
+    );
+  }
+}
+
+class _InsightCard extends StatelessWidget {
+  final Insight insight;
+  const _InsightCard({required this.insight});
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.app.colors;
+    final color = switch (insight.tone) {
+      InsightTone.positive => c.income,
+      InsightTone.negative => c.expense,
+      InsightTone.warning => c.warning,
+      InsightTone.neutral => c.primary,
+    };
+    final icon = switch (insight.tone) {
+      InsightTone.positive => Icons.trending_up,
+      InsightTone.negative => Icons.trending_down,
+      InsightTone.warning => Icons.warning_amber_rounded,
+      InsightTone.neutral => Icons.insights,
+    };
+    return Card(
+      margin: const EdgeInsets.only(bottom: 8),
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Row(
+          children: [
+            Icon(icon, color: color),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(insight.title,
+                      style: const TextStyle(fontWeight: FontWeight.w600)),
+                  const SizedBox(height: 2),
+                  Text(insight.subtitle,
+                      style: TextStyle(fontSize: 12, color: c.textSecondary)),
+                ],
+              ),
+            ),
           ],
         ),
       ),

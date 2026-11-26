@@ -6,6 +6,7 @@ import 'models/budget.dart';
 import 'models/category.dart';
 import 'models/import_record.dart';
 import 'models/recurring_rule.dart';
+import 'models/savings_goal.dart';
 import 'models/transaction.dart';
 
 /// Isar database setup. Offline-first: all data lives on device.
@@ -23,6 +24,7 @@ class AppDatabase {
         BudgetSchema,
         AppSettingsSchema,
         ImportRecordSchema,
+        SavingsGoalSchema,
       ],
       directory: dir.path,
       name: 'noova_finance',

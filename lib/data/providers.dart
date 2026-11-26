@@ -5,6 +5,7 @@ import 'database.dart';
 import 'repositories/budget_repo.dart';
 import 'repositories/category_repo.dart';
 import 'repositories/recurring_repo.dart';
+import 'repositories/savings_goal_repo.dart';
 import 'repositories/settings_repo.dart';
 import 'repositories/transaction_repo.dart';
 import 'services/budget_checker.dart';
@@ -39,6 +40,11 @@ final recurringRepoProvider = FutureProvider<RecurringRepository>((ref) async {
 final budgetRepoProvider = FutureProvider<BudgetRepository>((ref) async {
   final isar = await ref.watch(isarProvider.future);
   return BudgetRepository(isar);
+});
+
+final savingsGoalRepoProvider = FutureProvider<SavingsGoalRepository>((ref) async {
+  final isar = await ref.watch(isarProvider.future);
+  return SavingsGoalRepository(isar);
 });
 
 final settingsRepoProvider = FutureProvider<SettingsRepository>((ref) async {

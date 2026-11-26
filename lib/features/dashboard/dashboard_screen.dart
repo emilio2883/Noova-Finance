@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import 'package:noova_finance/theme/app_theme.dart';
 import '../../shared/ui/error_state.dart';
 import '../../shared/ui/loading_state.dart';
+import '../../shared/widgets/noova_logo.dart';
 import 'insights.dart';
 import '../../core/utils/money_format.dart';
 import '../../shared/widgets/main_nav_bar.dart';
@@ -28,16 +29,12 @@ class DashboardScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Noova Finance'),
+        title: const NoovaHeader(),
         actions: [
           IconButton(
             icon: const Icon(Icons.savings_outlined),
             tooltip: 'Metas de ahorro',
             onPressed: () => context.push('/goals'),
-          ),
-          IconButton(
-            icon: const Icon(Icons.settings_outlined),
-            onPressed: () => context.go('/settings'),
           ),
         ],
       ),

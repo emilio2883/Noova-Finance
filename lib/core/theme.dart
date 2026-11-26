@@ -41,10 +41,12 @@ class NoovaTheme {
       scaffoldBackgroundColor: c.background,
       colorScheme: scheme,
       appBarTheme: AppBarTheme(
-        backgroundColor: c.surface,
-        foregroundColor: c.textPrimary,
+        backgroundColor: c.hero,
+        foregroundColor: c.onHero,
         elevation: 0,
         centerTitle: true,
+        iconTheme: IconThemeData(color: c.onHero),
+        actionsIconTheme: IconThemeData(color: c.onHero),
       ),
       cardTheme: CardThemeData(
         color: c.card,

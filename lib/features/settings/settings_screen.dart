@@ -17,7 +17,6 @@ import '../../data/providers.dart';
 import '../dashboard/providers/dashboard_provider.dart';
 import '../../shared/widgets/main_nav_bar.dart';
 import 'widgets/pin_setup.dart';
-import 'widgets/reminder_config.dart';
 import 'package:noova_finance/theme/app_theme.dart';
 
 /// Settings hub: data, management, appearance, security.
@@ -74,7 +73,7 @@ class SettingsScreen extends ConsumerWidget {
               onChanged: (v) => ref.read(themeModeProvider.notifier).setDark(v),
             ),
           ),
-          _section(context, 'SEGURIDAD Y AVISOS'),
+          _section(context, 'SEGURIDAD'),
           _item(
             context,
             icon: Icons.lock_outline,
@@ -85,7 +84,6 @@ class SettingsScreen extends ConsumerWidget {
               builder: (_) => const PinSetupDialog(),
             ),
           ),
-          const ReminderConfig(),
           _section(context, 'PELIGRO'),
           _item(
             context,

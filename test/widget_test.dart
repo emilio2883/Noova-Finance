@@ -9,7 +9,7 @@ void main() {
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 100));
 
-    // Dashboard app bar renders (data providers load async in background)
-    expect(find.text('Noova Finance'), findsOneWidget);
+    // Dashboard app bar renders the Noova brand header (data loads async).
+    expect(find.text('Noova'), findsOneWidget);
   });
 }

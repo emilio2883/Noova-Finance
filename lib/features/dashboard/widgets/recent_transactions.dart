@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../../core/theme.dart';
+import 'package:noova_finance/theme/app_theme.dart';
 import '../../../core/utils/money_format.dart';
 import '../../../data/models/transaction.dart';
 import '../../../data/providers.dart';
@@ -31,6 +31,7 @@ class RecentTransactions extends ConsumerWidget {
       );
     }
 
+    final c = context.app.colors;
     final categoriesAsync = ref.watch(categoryRepoProvider);
 
     return Card(
@@ -48,8 +49,8 @@ class RecentTransactions extends ConsumerWidget {
                         ? Icons.arrow_downward
                         : Icons.arrow_upward,
                     color: t.type == TransactionType.income
-                        ? NoovaTheme.income
-                        : NoovaTheme.expense,
+                        ? c.income
+                        : c.expense,
                     size: 20,
                   ),
                   title: Text(snap.data ?? '…'),
@@ -63,8 +64,8 @@ class RecentTransactions extends ConsumerWidget {
                     style: TextStyle(
                       fontWeight: FontWeight.bold,
                       color: t.type == TransactionType.income
-                          ? NoovaTheme.income
-                          : NoovaTheme.expense,
+                          ? c.income
+                          : c.expense,
                     ),
                   ),
                   onTap: onTap != null ? () => onTap!(t) : null,

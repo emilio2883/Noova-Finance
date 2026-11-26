@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../../core/theme.dart';
+import 'package:noova_finance/theme/app_theme.dart';
 import '../../transaction/quick_add_modal.dart';
 
 /// FAB that opens the QuickAddModal.
@@ -11,8 +11,8 @@ class QuickAddButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return FloatingActionButton.large(
       onPressed: () => _openModal(context),
-      backgroundColor: NoovaTheme.accent,
-      foregroundColor: Colors.black,
+      backgroundColor: context.app.colors.primary,
+      foregroundColor: context.app.colors.textOnPrimary,
       child: const Icon(Icons.add, size: 36),
     );
   }

@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../core/theme.dart';
+import 'package:noova_finance/theme/app_theme.dart';
 import '../../core/utils/money_format.dart';
 import '../../shared/widgets/main_nav_bar.dart';
 import 'providers/dashboard_provider.dart';
@@ -53,19 +53,19 @@ class DashboardScreen extends ConsumerWidget {
                   utilidadPositiva: d.utilidadMes >= Decimal.zero,
                 ),
                 if (d.globalBudget > Decimal.zero) _GlobalBudgetCard(data: d),
-                const Padding(
-                  padding: EdgeInsets.fromLTRB(20, 16, 20, 4),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 16, 20, 4),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text('GASTOS POR CATEGORÍA',
                           style: TextStyle(
-                              color: NoovaTheme.textSecondary,
+                              color: context.app.colors.textSecondary,
                               fontSize: 12,
                               letterSpacing: 1.5)),
                       Text('Desliza ↓ gasto · ↑ presupuesto',
                           style: TextStyle(
-                              color: NoovaTheme.textSecondary, fontSize: 10)),
+                              color: context.app.colors.textSecondary, fontSize: 10)),
                     ],
                   ),
                 ),
@@ -131,16 +131,16 @@ class _GlobalBudgetCard extends StatelessWidget {
                 backgroundColor:
                     Theme.of(context).colorScheme.surfaceContainerHighest,
                 color: pct >= 100
-                    ? NoovaTheme.expense
+                    ? context.app.colors.expense
                     : pct >= 80
-                        ? NoovaTheme.warning
-                        : NoovaTheme.accent,
+                        ? context.app.colors.warning
+                        : context.app.colors.primary,
               ),
             ),
             const SizedBox(height: 4),
             Text('$pct% del presupuesto usado',
-                style: const TextStyle(
-                    fontSize: 11, color: NoovaTheme.textSecondary)),
+                style: TextStyle(
+                    fontSize: 11, color: context.app.colors.textSecondary)),
           ],
         ),
       ),

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../../core/theme.dart';
+import 'package:noova_finance/theme/app_theme.dart';
 
 /// Big current-saldo card at the top of the dashboard.
 class SaldoCard extends StatelessWidget {
@@ -10,6 +10,7 @@ class SaldoCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final c = context.app.colors;
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(20),
@@ -19,7 +20,7 @@ class SaldoCard extends StatelessWidget {
             Text(
               'SALDO ACTUAL',
               style: TextStyle(
-                color: NoovaTheme.textSecondary,
+                color: c.textSecondary,
                 fontSize: 12,
                 letterSpacing: 1.5,
               ),
@@ -27,10 +28,10 @@ class SaldoCard extends StatelessWidget {
             const SizedBox(height: 8),
             Text(
               saldoFormatted,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 36,
                 fontWeight: FontWeight.bold,
-                color: NoovaTheme.income,
+                color: c.income,
               ),
             ),
           ],

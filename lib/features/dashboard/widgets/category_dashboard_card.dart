@@ -2,7 +2,7 @@ import 'package:decimal/decimal.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../core/theme.dart';
+import 'package:noova_finance/theme/app_theme.dart';
 import '../../../core/utils/money_format.dart';
 import '../../budgets/budget_editor_sheet.dart';
 import '../../transaction/quick_add_modal.dart';
@@ -75,7 +75,7 @@ class CategoryDashboardCard extends ConsumerWidget {
                 style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
             const SizedBox(height: 4),
             Text('Gasto quincena: ${MoneyFormat.format(spend.total)}',
-                style: const TextStyle(color: NoovaTheme.textSecondary)),
+                style: TextStyle(color: context.app.colors.textSecondary)),
             const SizedBox(height: 16),
             for (final child in spend.children)
               _ChildRow(child: child),
@@ -91,7 +91,7 @@ class CategoryDashboardCard extends ConsumerWidget {
                     icon: const Icon(Icons.add),
                     label: const Text('Agregar gasto'),
                     style: FilledButton.styleFrom(
-                      backgroundColor: NoovaTheme.income,
+                      backgroundColor: context.app.colors.income,
                       foregroundColor: Colors.black,
                     ),
                   ),
@@ -106,7 +106,7 @@ class CategoryDashboardCard extends ConsumerWidget {
                     icon: const Icon(Icons.savings_outlined),
                     label: const Text('Presupuesto'),
                     style: FilledButton.styleFrom(
-                      backgroundColor: NoovaTheme.accent,
+                      backgroundColor: context.app.colors.primary,
                       foregroundColor: Colors.black,
                     ),
                   ),
@@ -160,7 +160,7 @@ class CategoryDashboardCard extends ConsumerWidget {
                     minHeight: 8,
                     backgroundColor:
                         Theme.of(context).colorScheme.surfaceContainerHighest,
-                    color: NoovaTheme.expense,
+                    color: context.app.colors.expense,
                   ),
                 ),
                 if (spend.hasBudget) ...[
@@ -170,8 +170,8 @@ class CategoryDashboardCard extends ConsumerWidget {
                     children: [
                       Text(
                         'Presupuesto: ${MoneyFormat.format(spend.budget)}',
-                        style: const TextStyle(
-                            fontSize: 11, color: NoovaTheme.textSecondary),
+                        style: TextStyle(
+                            fontSize: 11, color: context.app.colors.textSecondary),
                       ),
                       Text(
                         '${spend.percentUsed}%',
@@ -179,10 +179,10 @@ class CategoryDashboardCard extends ConsumerWidget {
                           fontSize: 11,
                           fontWeight: FontWeight.bold,
                           color: spend.percentUsed >= 100
-                              ? NoovaTheme.expense
+                              ? context.app.colors.expense
                               : spend.percentUsed >= 80
-                                  ? NoovaTheme.warning
-                                  : NoovaTheme.income,
+                                  ? context.app.colors.warning
+                                  : context.app.colors.income,
                         ),
                       ),
                     ],
@@ -196,10 +196,10 @@ class CategoryDashboardCard extends ConsumerWidget {
                       backgroundColor:
                           Theme.of(context).colorScheme.surfaceContainerHighest,
                       color: spend.percentUsed >= 100
-                          ? NoovaTheme.expense
+                          ? context.app.colors.expense
                           : spend.percentUsed >= 80
-                              ? NoovaTheme.warning
-                              : NoovaTheme.accent,
+                              ? context.app.colors.warning
+                              : context.app.colors.primary,
                     ),
                   ),
                 ],
@@ -228,8 +228,8 @@ class _ChildRow extends StatelessWidget {
           if (child.budget > Decimal.zero) ...[
             const SizedBox(width: 8),
             Text(' / ${MoneyFormat.format(child.budget)}',
-                style: const TextStyle(
-                    fontSize: 12, color: NoovaTheme.textSecondary)),
+                style: TextStyle(
+                    fontSize: 12, color: context.app.colors.textSecondary)),
           ],
         ],
       ),

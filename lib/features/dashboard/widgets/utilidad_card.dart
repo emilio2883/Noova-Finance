@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../../core/theme.dart';
+import 'package:noova_finance/theme/app_theme.dart';
 
 /// Monthly ingresos / gastos / utilidad summary card.
 class UtilidadCard extends StatelessWidget {
@@ -19,22 +19,23 @@ class UtilidadCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final c = context.app.colors;
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Row(
           children: [
             Expanded(
-              child: _MiniStat(label: 'Ingresos', value: ingresos, color: NoovaTheme.income),
+              child: _MiniStat(label: 'Ingresos', value: ingresos, color: c.income),
             ),
             Expanded(
-              child: _MiniStat(label: 'Gastos', value: gastos, color: NoovaTheme.expense),
+              child: _MiniStat(label: 'Gastos', value: gastos, color: c.expense),
             ),
             Expanded(
               child: _MiniStat(
                 label: 'Utilidad',
                 value: utilidad,
-                color: utilidadPositiva ? NoovaTheme.income : NoovaTheme.expense,
+                color: utilidadPositiva ? c.income : c.expense,
               ),
             ),
           ],
@@ -58,7 +59,7 @@ class _MiniStat extends StatelessWidget {
         Text(
           label.toUpperCase(),
           style: TextStyle(
-            color: NoovaTheme.textSecondary,
+            color: context.app.colors.textSecondary,
             fontSize: 10,
             letterSpacing: 1,
           ),

@@ -44,6 +44,15 @@ class CategorySpend {
   bool get hasBudget => budget > Decimal.zero;
 }
 
+/// A budget whose threshold was reached this quincena.
+class BudgetAlert {
+  final String name;
+  final int percent;
+  final int threshold;
+  final bool exceeded;
+  BudgetAlert({required this.name, required this.percent, required this.threshold, required this.exceeded});
+}
+
 /// Aggregated dashboard state.
 class DashboardData {
   final Decimal saldo;
@@ -53,6 +62,7 @@ class DashboardData {
   final Decimal ingresosAnio;
   final Decimal gastosAnio;
   final Decimal utilidadAnio;
+  final List<BudgetAlert> budgetAlerts;
   final List<CategorySpend> categorySpending; // sorted desc by total
   final Decimal globalBudget;
   final Decimal globalSpent; // spent within budgeted categories this quincena
@@ -66,6 +76,7 @@ class DashboardData {
     required this.ingresosAnio,
     required this.gastosAnio,
     required this.utilidadAnio,
+    required this.budgetAlerts,
     required this.categorySpending,
     required this.globalBudget,
     required this.globalSpent,
@@ -98,12 +109,17 @@ final dashboardProvider = FutureProvider.autoDispose<DashboardData>((ref) async 
 
   // Build principal rollups.
   final principals = await catRepo.getTopLevel(TransactionType.expense);
+  final nameById = <int, String>{};
   final categorySpending = <CategorySpend>[];
   Decimal globalBudget = Decimal.zero;
   Decimal globalSpent = Decimal.zero;
 
   for (final p in principals) {
+    nameById[p.id] = p.name;
     final children = await catRepo.getChildren(p.id);
+    for (final ch in children) {
+      nameById[ch.id] = ch.name;
+    }
     final childSpends = <ChildSpend>[];
     var total = spentByCat[p.id] ?? Decimal.zero;
     var budgetTotal = Decimal.zero;
@@ -138,6 +154,23 @@ final dashboardProvider = FutureProvider.autoDispose<DashboardData>((ref) async 
   // Dynamic ordering: highest spending first.
   categorySpending.sort((a, b) => b.total.compareTo(a.total));
 
+  // Budget threshold alerts (manual alertThreshold per budget).
+  final budgetAlerts = <BudgetAlert>[];
+  for (final b in budgets) {
+    if (b.amountPerQuincenaBps == 0) continue;
+    final spent = spentByCat[b.categoryId] ?? Decimal.zero;
+    final pct =
+        (spent.shift(4).toBigInt().toInt() * 100) ~/ b.amountPerQuincenaBps;
+    if (pct >= b.alertThreshold && b.alertThreshold > 0) {
+      budgetAlerts.add(BudgetAlert(
+        name: nameById[b.categoryId] ?? 'Categoría',
+        percent: pct,
+        threshold: b.alertThreshold,
+        exceeded: pct >= 100,
+      ));
+    }
+  }
+
   final recent = await txnRepo.getRecent(limit: 15);
 
   return DashboardData(
@@ -148,6 +181,7 @@ final dashboardProvider = FutureProvider.autoDispose<DashboardData>((ref) async 
     ingresosAnio: SaldoCalculator.ingresos(all, yStart, yEnd),
     gastosAnio: SaldoCalculator.gastos(all, yStart, yEnd),
     utilidadAnio: SaldoCalculator.utilidad(all, yStart, yEnd),
+    budgetAlerts: budgetAlerts,
     categorySpending: categorySpending,
     globalBudget: globalBudget,
     globalSpent: globalSpent,

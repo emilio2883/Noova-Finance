@@ -2,6 +2,7 @@ import 'package:decimal/decimal.dart';
 import 'package:isar/isar.dart';
 
 import '../../core/utils/decimal_utils.dart';
+import 'transaction.dart';
 
 part 'recurring_rule.g.dart';
 
@@ -20,6 +21,9 @@ class RecurringRule {
 
   @Enumerated(EnumType.name)
   RecurringFrequency frequency;
+
+  @Enumerated(EnumType.name)
+  TransactionType type;
 
   /// Day of month when the transaction activates (1-31).
   /// For quincenal: 1 (first quincena) or 16 (second quincena).
@@ -43,6 +47,7 @@ class RecurringRule {
     required this.categoryId,
     required this.amountBps,
     required this.frequency,
+    this.type = TransactionType.expense,
     required this.activationDay,
     this.isActive = true,
     required this.startDate,

@@ -130,6 +130,20 @@ class _TransactionDetailScreenState
             controller: _descCtrl,
             decoration: const InputDecoration(labelText: 'Descripción (opcional)'),
           ),
+          if (widget.transaction.isRecurring)
+            Padding(
+              padding: const EdgeInsets.only(top: 12),
+              child: Row(children: [
+                Icon(Icons.autorenew, size: 16, color: context.app.colors.primary),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                      'Recurrente mensual · cambiar el monto actualiza la regla automática',
+                      style: TextStyle(
+                          fontSize: 12, color: context.app.colors.textSecondary)),
+                ),
+              ]),
+            ),
           const SizedBox(height: 28),
           FilledButton(
             onPressed: _save,

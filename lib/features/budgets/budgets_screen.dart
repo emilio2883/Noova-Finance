@@ -7,6 +7,7 @@ import '../../core/utils/money_format.dart';
 import '../../data/models/category.dart';
 import '../../data/models/transaction.dart';
 import '../../data/providers.dart';
+import 'package:go_router/go_router.dart';
 import 'budget_editor_sheet.dart';
 import 'package:noova_finance/theme/app_theme.dart';
 
@@ -46,8 +47,9 @@ class BudgetsScreen extends ConsumerWidget {
       appBar: AppBar(
         title: const Text('Presupuestos'),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () => Navigator.of(context).maybePop(),
+          icon: const Icon(Icons.home_outlined),
+          tooltip: 'Inicio',
+          onPressed: () => context.go('/dashboard'),
         ),
       ),
       body: FutureBuilder<List<_ParentBudget>>(

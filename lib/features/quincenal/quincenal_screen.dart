@@ -1,6 +1,7 @@
 import 'package:decimal/decimal.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import 'package:noova_finance/theme/app_theme.dart';
 import '../../core/utils/date_utils.dart';
@@ -16,14 +17,6 @@ import '../../shared/widgets/main_nav_bar.dart';
 import '../../theme/app_radii.dart';
 import '../transaction/quick_add_modal.dart';
 import '../transaction/transaction_detail_screen.dart';
-
-class _P {
-  final String key;
-  final String label;
-  final DateTime start;
-  final DateTime end;
-  const _P(this.key, this.label, this.start, this.end);
-}
 
 class _Data {
   final List<Transaction> txns;
@@ -43,7 +36,8 @@ class QuincenalScreen extends ConsumerStatefulWidget {
 }
 
 class _QuincenalScreenState extends ConsumerState<QuincenalScreen> {
-  String? _periodKey;
+  int _view = 0; // 0=quincena, 1=mes, 2=año
+  DateTime _anchor = DateTime.now();
   int? _filterCategoryId;
 
   Future<_Data> _load() async {
@@ -58,38 +52,42 @@ class _QuincenalScreenState extends ConsumerState<QuincenalScreen> {
     return _Data(txns, {for (final c in cats) c.id: c}, leaves);
   }
 
-  List<_P> _periods(List<Transaction> txns) {
-    final years = <int>{};
-    final months = <String, DateTime>{};
-    for (final t in txns) {
-      years.add(t.date.year);
-      months['${t.date.year}-${t.date.month}'] =
-          DateTime(t.date.year, t.date.month, 1);
+  (DateTime, DateTime) get _range {
+    if (_view == 0) {
+      return (
+        QuincenaUtils.quincenaStart(_anchor),
+        QuincenaUtils.quincenaEnd(_anchor)
+      );
+    } else if (_view == 1) {
+      return (QuincenaUtils.monthStart(_anchor), QuincenaUtils.monthEnd(_anchor));
     }
-    final sortedYears = years.toList()..sort((a, b) => b.compareTo(a));
-    final sortedMonths = months.values.toList()..sort((a, b) => b.compareTo(a));
+    return (QuincenaUtils.yearStart(_anchor), QuincenaUtils.yearEnd(_anchor));
+  }
 
-    // Quincenas: current and up to 23 previous.
-    final quincenas = <_P>[];
-    var d = DateTime.now();
-    for (var i = 0; i < 24; i++) {
-      final qs = QuincenaUtils.quincenaStart(d);
-      final qe = QuincenaUtils.quincenaEnd(d);
-      quincenas.add(_P('Q${qs.year}-${qs.month}-${qs.day}',
-          'Quincena ${QuincenaUtils.quincenaLabel(d)}', qs, qe));
-      d = qs.subtract(const Duration(days: 1));
-    }
+  String get _label {
+    if (_view == 0) return QuincenaUtils.quincenaLabel(_anchor);
+    if (_view == 1) return '${_monthNames[_anchor.month - 1]} ${_anchor.year}';
+    return 'Año ${_anchor.year}';
+  }
 
-    return [
-      ...quincenas,
-      for (final m in sortedMonths)
-        _P('M${m.year}-${m.month}', '${_monthNames[m.month - 1]} ${m.year}',
-            DateTime(m.year, m.month, 1),
-            DateTime(m.year, m.month + 1, 1).subtract(const Duration(microseconds: 1))),
-      for (final y in sortedYears)
-        _P('Y$y', 'Año $y', DateTime(y, 1, 1),
-            DateTime(y + 1, 1, 1).subtract(const Duration(microseconds: 1))),
-    ];
+  void _shift(int d) {
+    setState(() {
+      if (_view == 0) {
+        if (d > 0) {
+          _anchor = _anchor.day <= 15
+              ? DateTime(_anchor.year, _anchor.month, 16)
+              : DateTime(_anchor.year, _anchor.month + 1, 1);
+        } else {
+          _anchor = _anchor.day <= 15
+              ? DateTime(_anchor.year, _anchor.month - 1, 16)
+              : DateTime(_anchor.year, _anchor.month, 1);
+        }
+      } else if (_view == 1) {
+        _anchor = DateTime(_anchor.year, _anchor.month + d, 1);
+      } else {
+        _anchor = DateTime(_anchor.year + d, 1, 1);
+      }
+    });
   }
 
   String _pct(Decimal part, Decimal total) {
@@ -112,12 +110,20 @@ class _QuincenalScreenState extends ConsumerState<QuincenalScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final c = context.app.colors;
     return Scaffold(
-      appBar: AppBar(title: const Text('Consumo')),
+      appBar: AppBar(
+        title: const Text('Consumo'),
+        leading: IconButton(
+          icon: const Icon(Icons.home_outlined),
+          tooltip: 'Inicio',
+          onPressed: () => context.go('/dashboard'),
+        ),
+      ),
       floatingActionButton: FloatingActionButton(
         onPressed: _openAdd,
-        backgroundColor: context.app.colors.primary,
-        foregroundColor: context.app.colors.textOnPrimary,
+        backgroundColor: c.primary,
+        foregroundColor: c.textOnPrimary,
         child: const Icon(Icons.add),
       ),
       body: FutureBuilder<_Data>(
@@ -132,62 +138,65 @@ class _QuincenalScreenState extends ConsumerState<QuincenalScreen> {
                 onRetry: () => setState(() {}));
           }
           final data = snapshot.data!;
-          final periods = _periods(data.txns);
-          final selected = periods.firstWhere(
-            (p) => p.key == _periodKey,
-            orElse: () => periods.first,
-          );
+          final range = _range;
+          final start = range.$1;
+          final end = range.$2;
 
-          final ingresos =
-              SaldoCalculator.ingresos(data.txns, selected.start, selected.end);
-          final gastos =
-              SaldoCalculator.gastos(data.txns, selected.start, selected.end);
+          final ingresos = SaldoCalculator.ingresos(data.txns, start, end);
+          final gastos = SaldoCalculator.gastos(data.txns, start, end);
           final utilidad = ingresos - gastos;
-          final byCat =
-              SaldoCalculator.gastosPorCategoria(data.txns, selected.start, selected.end);
+          final byCat = SaldoCalculator.gastosPorCategoria(data.txns, start, end);
 
           var movs = data.txns
-              .where((t) =>
-                  !t.date.isBefore(selected.start) && !t.date.isAfter(selected.end))
+              .where((t) => !t.date.isBefore(start) && !t.date.isAfter(end))
               .toList();
           if (_filterCategoryId != null) {
             movs = movs.where((t) => t.categoryId == _filterCategoryId).toList();
           }
           movs.sort((a, b) => b.date.compareTo(a.date));
 
-          final c = context.app.colors;
-
           return ListView(
             padding: const EdgeInsets.fromLTRB(16, 12, 16, 96),
             children: [
-              // Period selector
+              // Compact period filter: segmented + arrows (no long list)
               Card(
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
-                  child: Row(
+                  padding: const EdgeInsets.all(12),
+                  child: Column(
                     children: [
-                      Icon(Icons.calendar_month, color: c.primary),
-                      const SizedBox(width: 10),
-                      const Text('Periodo:', style: TextStyle(fontWeight: FontWeight.w600)),
-                      const SizedBox(width: 10),
-                      Expanded(
-                        child: DropdownButton<String>(
-                          isExpanded: true,
-                          value: selected.key,
-                          underline: const SizedBox.shrink(),
-                          items: [
-                            for (final p in periods)
-                              DropdownMenuItem(value: p.key, child: Text(p.label)),
-                          ],
-                          onChanged: (k) => setState(() => _periodKey = k),
-                        ),
+                      SegmentedButton<int>(
+                        showSelectedIcon: false,
+                        segments: const [
+                          ButtonSegment(value: 0, label: Text('Quincena')),
+                          ButtonSegment(value: 1, label: Text('Mes')),
+                          ButtonSegment(value: 2, label: Text('Año')),
+                        ],
+                        selected: {_view},
+                        onSelectionChanged: (s) => setState(() => _view = s.first),
+                      ),
+                      const SizedBox(height: 6),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          IconButton(
+                              onPressed: () => _shift(-1),
+                              icon: const Icon(Icons.chevron_left)),
+                          Expanded(
+                            child: Text(_label,
+                                textAlign: TextAlign.center,
+                                style: const TextStyle(
+                                    fontWeight: FontWeight.w600, fontSize: 15)),
+                          ),
+                          IconButton(
+                              onPressed: () => _shift(1),
+                              icon: const Icon(Icons.chevron_right)),
+                        ],
                       ),
                     ],
                   ),
                 ),
               ),
               const SizedBox(height: 12),
-              // Totals with percentages
               Card(
                 child: Padding(
                   padding: const EdgeInsets.all(16),
@@ -204,9 +213,14 @@ class _QuincenalScreenState extends ConsumerState<QuincenalScreen> {
               ),
               const SizedBox(height: 16),
               Text('GASTOS POR CATEGORÍA',
-                  style: TextStyle(color: c.textSecondary, fontSize: 12, letterSpacing: 1.5)),
+                  style: TextStyle(
+                      color: c.textSecondary, fontSize: 12, letterSpacing: 1.5)),
               const SizedBox(height: 8),
-              _CategoryBreakdown(byCategory: byCat, categories: data.categories, pct: _pct, gastos: gastos),
+              _CategoryBreakdown(
+                  byCategory: byCat,
+                  categories: data.categories,
+                  pct: _pct,
+                  gastos: gastos),
               const SizedBox(height: 16),
               Row(
                 children: [
@@ -222,7 +236,8 @@ class _QuincenalScreenState extends ConsumerState<QuincenalScreen> {
                         const DropdownMenuItem<int?>(
                             value: null, child: Text('Todas las categorías')),
                         for (final cat in data.leaves)
-                          DropdownMenuItem<int?>(value: cat.id, child: Text(cat.name)),
+                          DropdownMenuItem<int?>(
+                              value: cat.id, child: Text(cat.name)),
                       ],
                       onChanged: (v) => setState(() => _filterCategoryId = v),
                     ),
@@ -230,7 +245,8 @@ class _QuincenalScreenState extends ConsumerState<QuincenalScreen> {
                 ],
               ),
               Text('MOVIMIENTOS (${movs.length})',
-                  style: TextStyle(color: c.textSecondary, fontSize: 12, letterSpacing: 1.5)),
+                  style: TextStyle(
+                      color: c.textSecondary, fontSize: 12, letterSpacing: 1.5)),
               const SizedBox(height: 4),
               if (movs.isEmpty)
                 const Padding(
@@ -290,7 +306,7 @@ class _QuincenalScreenState extends ConsumerState<QuincenalScreen> {
   }
 }
 
-class _CategoryBreakdown extends ConsumerWidget {
+class _CategoryBreakdown extends StatelessWidget {
   final Map<int, Decimal> byCategory;
   final Map<int, Category> categories;
   final String Function(Decimal, Decimal) pct;
@@ -304,7 +320,7 @@ class _CategoryBreakdown extends ConsumerWidget {
   });
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     if (byCategory.isEmpty) {
       return const Card(
           child: Padding(

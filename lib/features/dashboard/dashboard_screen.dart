@@ -62,9 +62,9 @@ class DashboardScreen extends ConsumerWidget {
                   utilidad: MoneyFormat.compact(d.utilidadAnio),
                   utilidadPositiva: d.utilidadAnio >= Decimal.zero,
                 ),
+                _InsightsSection(insights: buildInsights(d)),
                 if (d.globalBudget > Decimal.zero) _GlobalBudgetCard(data: d),
                 const _GoalsSummary(),
-                _InsightsSection(insights: buildInsights(d)),
                 Padding(
                   padding: const EdgeInsets.fromLTRB(20, 16, 20, 4),
                   child: Row(
@@ -152,6 +152,30 @@ class _GlobalBudgetCard extends StatelessWidget {
             Text('$pct% del presupuesto usado',
                 style: TextStyle(
                     fontSize: 11, color: context.app.colors.textSecondary)),
+            if (data.budgetAlerts.isNotEmpty) ...[
+              const SizedBox(height: 6),
+              for (final a in data.budgetAlerts)
+                Padding(
+                  padding: const EdgeInsets.only(top: 2),
+                  child: Row(children: [
+                    Icon(Icons.warning_amber_rounded,
+                        size: 15,
+                        color: a.exceeded
+                            ? context.app.colors.expense
+                            : context.app.colors.warning),
+                    const SizedBox(width: 6),
+                    Expanded(
+                      child: Text(
+                          '${a.name}: ${a.percent}% (umbral ${a.threshold}%)',
+                          style: TextStyle(
+                              fontSize: 11,
+                              color: a.exceeded
+                                  ? context.app.colors.expense
+                                  : context.app.colors.warning)),
+                    ),
+                  ]),
+                ),
+            ],
           ],
         ),
       ),
@@ -249,52 +273,49 @@ class _GoalsSummary extends ConsumerWidget {
         final pct = totalTarget <= 0
             ? 0.0
             : (totalSaved / totalTarget).clamp(0.0, 1.0).toDouble();
-        return Padding(
-          padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text('METAS DE AHORRO',
-                  style: TextStyle(
-                      color: c.textSecondary, fontSize: 12, letterSpacing: 1.5)),
-              const SizedBox(height: 8),
-              Card(
-                child: Padding(
-                  padding: const EdgeInsets.all(14),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                              '${MoneyFormat.format(DecimalUtils.fromBps(totalSaved))} de ${MoneyFormat.format(DecimalUtils.fromBps(totalTarget))}',
-                              style: const TextStyle(
-                                  fontWeight: FontWeight.w600, fontSize: 13)),
-                          Text('${(pct * 100).round()}%',
-                              style: TextStyle(
-                                  color: c.textSecondary,
-                                  fontWeight: FontWeight.bold)),
-                        ],
-                      ),
-                      const SizedBox(height: 8),
-                      AnimatedProgressBar(
-                        value: pct,
-                        minHeight: 8,
-                        borderRadius: AppRadii.standard.brXs,
-                        backgroundColor:
-                            Theme.of(context).colorScheme.surfaceContainerHighest,
-                        color: c.income,
-                      ),
-                      const SizedBox(height: 6),
-                      Text('${goals.length} meta(s) activa(s)',
-                          style:
-                              TextStyle(fontSize: 11, color: c.textSecondary)),
-                    ],
-                  ),
+        return Card(
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Row(children: [
+                      Icon(Icons.savings_outlined, size: 18, color: c.income),
+                      const SizedBox(width: 6),
+                      const Text('Metas de ahorro',
+                          style: TextStyle(fontWeight: FontWeight.w600)),
+                    ]),
+                    Text('${(pct * 100).round()}%',
+                        style: TextStyle(
+                            color: c.textSecondary, fontWeight: FontWeight.bold)),
+                  ],
                 ),
-              ),
-            ],
+                const SizedBox(height: 6),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                        '${MoneyFormat.format(DecimalUtils.fromBps(totalSaved))} de ${MoneyFormat.format(DecimalUtils.fromBps(totalTarget))}',
+                        style: const TextStyle(fontSize: 13)),
+                    Text('${goals.length} metas',
+                        style:
+                            TextStyle(fontSize: 11, color: c.textSecondary)),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                AnimatedProgressBar(
+                  value: pct,
+                  minHeight: 8,
+                  borderRadius: AppRadii.standard.brXs,
+                  backgroundColor:
+                      Theme.of(context).colorScheme.surfaceContainerHighest,
+                  color: c.income,
+                ),
+              ],
+            ),
           ),
         );
       },

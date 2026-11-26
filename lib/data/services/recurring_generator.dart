@@ -34,7 +34,7 @@ class RecurringGenerator {
       await _transactionRepo.insert(Transaction(
         date: date,
         amountBps: rule.amountBps,
-        type: TransactionType.expense,
+        type: rule.type,
         categoryId: rule.categoryId,
         description: 'Generado automáticamente (recurrente)',
         isRecurring: true,

@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:isar/isar.dart';
 
+import 'package:noova_finance/data/models/savings_contribution.dart';
 import 'package:noova_finance/data/models/savings_goal.dart';
 import 'package:noova_finance/data/repositories/savings_goal_repo.dart';
 
@@ -13,7 +14,7 @@ void main() {
   setUpAll(() async {
     await Isar.initializeIsarCore(download: true);
     isar = await Isar.open(
-      [SavingsGoalSchema],
+      [SavingsGoalSchema, SavingsContributionSchema],
       directory: Directory.systemTemp.path,
       name: 'test_goal_\${DateTime.now().millisecondsSinceEpoch}',
     );

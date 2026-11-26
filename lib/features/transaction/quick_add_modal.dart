@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 
 import '../../core/utils/decimal_utils.dart';
+import '../../data/models/recurring_rule.dart';
 import '../../data/models/transaction.dart';
 import 'providers/transaction_provider.dart';
 import '../../shared/widgets/amount_input.dart';
@@ -32,6 +33,7 @@ class _QuickAddModalState extends ConsumerState<QuickAddModal> {
   String _amountText = '';
   int? _categoryId;
   DateTime _date = DateTime.now();
+  bool _recurring = false;
 
   @override
   void initState() {
@@ -53,6 +55,9 @@ class _QuickAddModalState extends ConsumerState<QuickAddModal> {
       amount: DecimalUtils.tryParse(_amountText)!,
       type: _type,
       categoryId: _categoryId!,
+      isRecurring: _recurring,
+      frequency: RecurringFrequency.monthly,
+      activationDay: _date.day,
     );
     if (mounted) Navigator.pop(context);
   }
@@ -115,7 +120,15 @@ class _QuickAddModalState extends ConsumerState<QuickAddModal> {
                 value: _date,
                 onChanged: (d) => setState(() => _date = d),
               ),
-              const SizedBox(height: 20),
+              SwitchListTile(
+                contentPadding: EdgeInsets.zero,
+                secondary: Icon(Icons.autorenew, color: context.app.colors.primary),
+                title: const Text('Recurrente (cada mes)'),
+                subtitle: const Text('Se generará automáticamente cada mes'),
+                value: _recurring,
+                onChanged: (v) => setState(() => _recurring = v),
+              ),
+              const SizedBox(height: 8),
 
               // Save
               FilledButton(

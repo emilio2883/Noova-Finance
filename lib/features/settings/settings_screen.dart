@@ -28,7 +28,14 @@ class SettingsScreen extends ConsumerWidget {
     final mode = ref.watch(themeModeProvider);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Ajustes')),
+      appBar: AppBar(
+        title: const Text('Ajustes'),
+        leading: IconButton(
+          icon: const Icon(Icons.home_outlined),
+          tooltip: 'Inicio',
+          onPressed: () => context.go('/dashboard'),
+        ),
+      ),
       body: ListView(
         children: [
           _section(context, 'DATOS'),

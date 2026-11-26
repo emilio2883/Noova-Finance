@@ -6,6 +6,7 @@ import 'models/budget.dart';
 import 'models/category.dart';
 import 'models/import_record.dart';
 import 'models/recurring_rule.dart';
+import 'models/savings_contribution.dart';
 import 'models/savings_goal.dart';
 import 'models/transaction.dart';
 
@@ -25,6 +26,7 @@ class AppDatabase {
         AppSettingsSchema,
         ImportRecordSchema,
         SavingsGoalSchema,
+        SavingsContributionSchema,
       ],
       directory: dir.path,
       name: 'noova_finance',

@@ -57,6 +57,12 @@ const RecurringRuleSchema = CollectionSchema(
       id: 7,
       name: r'startDate',
       type: IsarType.dateTime,
+    ),
+    r'type': PropertySchema(
+      id: 8,
+      name: r'type',
+      type: IsarType.string,
+      enumMap: _RecurringRuletypeEnumValueMap,
     )
   },
   estimateSize: _recurringRuleEstimateSize,
@@ -80,6 +86,7 @@ int _recurringRuleEstimateSize(
 ) {
   var bytesCount = offsets.last;
   bytesCount += 3 + object.frequency.name.length * 3;
+  bytesCount += 3 + object.type.name.length * 3;
   return bytesCount;
 }
 
@@ -97,6 +104,7 @@ void _recurringRuleSerialize(
   writer.writeBool(offsets[5], object.isActive);
   writer.writeDateTime(offsets[6], object.lastGenerated);
   writer.writeDateTime(offsets[7], object.startDate);
+  writer.writeString(offsets[8], object.type.name);
 }
 
 RecurringRule _recurringRuleDeserialize(
@@ -116,6 +124,8 @@ RecurringRule _recurringRuleDeserialize(
     isActive: reader.readBoolOrNull(offsets[5]) ?? true,
     lastGenerated: reader.readDateTimeOrNull(offsets[6]),
     startDate: reader.readDateTime(offsets[7]),
+    type: _RecurringRuletypeValueEnumMap[reader.readStringOrNull(offsets[8])] ??
+        TransactionType.expense,
   );
   object.id = id;
   return object;
@@ -146,6 +156,9 @@ P _recurringRuleDeserializeProp<P>(
       return (reader.readDateTimeOrNull(offset)) as P;
     case 7:
       return (reader.readDateTime(offset)) as P;
+    case 8:
+      return (_RecurringRuletypeValueEnumMap[reader.readStringOrNull(offset)] ??
+          TransactionType.expense) as P;
     default:
       throw IsarError('Unknown property with id $propertyId');
   }
@@ -158,6 +171,14 @@ const _RecurringRulefrequencyEnumValueMap = {
 const _RecurringRulefrequencyValueEnumMap = {
   r'quincenal': RecurringFrequency.quincenal,
   r'monthly': RecurringFrequency.monthly,
+};
+const _RecurringRuletypeEnumValueMap = {
+  r'income': r'income',
+  r'expense': r'expense',
+};
+const _RecurringRuletypeValueEnumMap = {
+  r'income': TransactionType.income,
+  r'expense': TransactionType.expense,
 };
 
 Id _recurringRuleGetId(RecurringRule object) {
@@ -827,6 +848,141 @@ extension RecurringRuleQueryFilter
       ));
     });
   }
+
+  QueryBuilder<RecurringRule, RecurringRule, QAfterFilterCondition> typeEqualTo(
+    TransactionType value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'type',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<RecurringRule, RecurringRule, QAfterFilterCondition>
+      typeGreaterThan(
+    TransactionType value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'type',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<RecurringRule, RecurringRule, QAfterFilterCondition>
+      typeLessThan(
+    TransactionType value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'type',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<RecurringRule, RecurringRule, QAfterFilterCondition> typeBetween(
+    TransactionType lower,
+    TransactionType upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'type',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<RecurringRule, RecurringRule, QAfterFilterCondition>
+      typeStartsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.startsWith(
+        property: r'type',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<RecurringRule, RecurringRule, QAfterFilterCondition>
+      typeEndsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.endsWith(
+        property: r'type',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<RecurringRule, RecurringRule, QAfterFilterCondition>
+      typeContains(String value, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.contains(
+        property: r'type',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<RecurringRule, RecurringRule, QAfterFilterCondition> typeMatches(
+      String pattern,
+      {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.matches(
+        property: r'type',
+        wildcard: pattern,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<RecurringRule, RecurringRule, QAfterFilterCondition>
+      typeIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'type',
+        value: '',
+      ));
+    });
+  }
+
+  QueryBuilder<RecurringRule, RecurringRule, QAfterFilterCondition>
+      typeIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        property: r'type',
+        value: '',
+      ));
+    });
+  }
 }
 
 extension RecurringRuleQueryObject
@@ -939,6 +1095,18 @@ extension RecurringRuleQuerySortBy
       sortByStartDateDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'startDate', Sort.desc);
+    });
+  }
+
+  QueryBuilder<RecurringRule, RecurringRule, QAfterSortBy> sortByType() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'type', Sort.asc);
+    });
+  }
+
+  QueryBuilder<RecurringRule, RecurringRule, QAfterSortBy> sortByTypeDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'type', Sort.desc);
     });
   }
 }
@@ -1061,6 +1229,18 @@ extension RecurringRuleQuerySortThenBy
       return query.addSortBy(r'startDate', Sort.desc);
     });
   }
+
+  QueryBuilder<RecurringRule, RecurringRule, QAfterSortBy> thenByType() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'type', Sort.asc);
+    });
+  }
+
+  QueryBuilder<RecurringRule, RecurringRule, QAfterSortBy> thenByTypeDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'type', Sort.desc);
+    });
+  }
 }
 
 extension RecurringRuleQueryWhereDistinct
@@ -1113,6 +1293,13 @@ extension RecurringRuleQueryWhereDistinct
   QueryBuilder<RecurringRule, RecurringRule, QDistinct> distinctByStartDate() {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'startDate');
+    });
+  }
+
+  QueryBuilder<RecurringRule, RecurringRule, QDistinct> distinctByType(
+      {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'type', caseSensitive: caseSensitive);
     });
   }
 }
@@ -1172,6 +1359,13 @@ extension RecurringRuleQueryProperty
   QueryBuilder<RecurringRule, DateTime, QQueryOperations> startDateProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'startDate');
+    });
+  }
+
+  QueryBuilder<RecurringRule, TransactionType, QQueryOperations>
+      typeProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'type');
     });
   }
 }

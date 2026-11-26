@@ -5,12 +5,20 @@ import 'core/router.dart';
 import 'core/theme.dart';
 import 'core/theme_provider.dart';
 
-/// Root widget: reactive theme (light/dark) + GoRouter navigation.
-class NoovaApp extends ConsumerWidget {
+/// Root widget: reactive theme (light/dark) + a STABLE GoRouter instance
+/// (built once) so switching the theme never resets navigation.
+class NoovaApp extends ConsumerStatefulWidget {
   const NoovaApp({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<NoovaApp> createState() => _NoovaAppState();
+}
+
+class _NoovaAppState extends ConsumerState<NoovaApp> {
+  final _router = buildRouter();
+
+  @override
+  Widget build(BuildContext context) {
     final mode = ref.watch(themeModeProvider);
     return MaterialApp.router(
       title: 'Noova Finance',
@@ -18,7 +26,7 @@ class NoovaApp extends ConsumerWidget {
       theme: NoovaTheme.lightTheme,
       darkTheme: NoovaTheme.darkTheme,
       themeMode: mode,
-      routerConfig: buildRouter(),
+      routerConfig: _router,
     );
   }
 }

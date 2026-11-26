@@ -2,6 +2,7 @@ import 'package:decimal/decimal.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/services/notification_service.dart';
+import '../../../data/models/recurring_rule.dart';
 import '../../../data/models/transaction.dart';
 import '../../../data/providers.dart';
 import '../../dashboard/providers/dashboard_provider.dart';
@@ -17,14 +18,33 @@ class TransactionService {
     required TransactionType type,
     required int categoryId,
     String? description,
+    bool isRecurring = false,
+    RecurringFrequency frequency = RecurringFrequency.monthly,
+    int? activationDay,
   }) async {
     final repo = await _ref.read(transactionRepoProvider.future);
+    final amountBps = amount.shift(4).toBigInt().toInt();
+    int? ruleId;
+    if (isRecurring) {
+      final recRepo = await _ref.read(recurringRepoProvider.future);
+      ruleId = await recRepo.insert(RecurringRule(
+        categoryId: categoryId,
+        amountBps: amountBps,
+        frequency: frequency,
+        type: type,
+        activationDay: activationDay ?? date.day,
+        startDate: date,
+        lastGenerated: date,
+      ));
+    }
     await repo.insert(Transaction(
       date: date,
-      amountBps: amount.shift(4).toBigInt().toInt(),
+      amountBps: amountBps,
       type: type,
       categoryId: categoryId,
       description: description,
+      isRecurring: isRecurring,
+      recurringRuleId: ruleId,
     ));
     refreshDashboard(_ref);
 
@@ -37,6 +57,16 @@ class TransactionService {
   Future<void> update(Transaction t) async {
     final repo = await _ref.read(transactionRepoProvider.future);
     await repo.update(t);
+    if (t.recurringRuleId != null) {
+      final recRepo = await _ref.read(recurringRepoProvider.future);
+      final rule = await recRepo.getById(t.recurringRuleId!);
+      if (rule != null) {
+        rule.amountBps = t.amountBps;
+        rule.type = t.type;
+        rule.categoryId = t.categoryId;
+        await recRepo.update(rule);
+      }
+    }
     refreshDashboard(_ref);
   }
 

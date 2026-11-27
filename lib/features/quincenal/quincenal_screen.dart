@@ -84,6 +84,37 @@ class _QuincenalScreenState extends ConsumerState<QuincenalScreen> {
     return '${(part.toDouble() / total.toDouble() * 100).toStringAsFixed(0)}%';
   }
 
+  /// Groups expense amounts by principal category (e.g. Impuestos) so the
+  /// breakdown shows the category together with its subcategories.
+  List<_GroupTotal> _groupExpenses(
+      Map<int, Decimal> byCat, Map<int, Category> cats) {
+    final principals = cats.values
+        .where((k) =>
+            k.isGroup &&
+            k.parentId == null &&
+            k.isActive &&
+            k.type == TransactionType.expense)
+        .toList()
+      ..sort((a, b) => a.order.compareTo(b.order));
+    final groups = <_GroupTotal>[];
+    for (final p in principals) {
+      final children = cats.values
+          .where((k) => k.parentId == p.id && k.isActive)
+          .toList()
+        ..sort((a, b) => a.order.compareTo(b.order));
+      var total = byCat[p.id] ?? Decimal.zero;
+      final kids = <_ChildTotal>[];
+      for (final ch in children) {
+        final s = byCat[ch.id] ?? Decimal.zero;
+        kids.add(_ChildTotal(ch, s));
+        total += s;
+      }
+      groups.add(_GroupTotal(p, total, kids));
+    }
+    groups.sort((a, b) => b.total.compareTo(a.total));
+    return groups;
+  }
+
   Future<void> _openAdd() async {
     await showModalBottomSheet(
       context: context,
@@ -203,9 +234,8 @@ class _QuincenalScreenState extends ConsumerState<QuincenalScreen> {
               const SizedBox(height: 16),
               _sectionTitle('GASTOS POR CATEGORÍA', c),
               const SizedBox(height: 8),
-              _CategoryBreakdown(
-                  byCategory: byCat,
-                  categories: data.categories,
+              _GroupedExpenses(
+                  groups: _groupExpenses(byCat, data.categories),
                   pct: _pct,
                   total: gastos,
                   color: c.expense),
@@ -333,6 +363,107 @@ class _CategoryBreakdown extends StatelessWidget {
                           Theme.of(context).colorScheme.surfaceContainerHighest,
                       color: color,
                     ),
+                  ],
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+
+class _ChildTotal {
+  final Category category;
+  final Decimal amount;
+  const _ChildTotal(this.category, this.amount);
+}
+
+class _GroupTotal {
+  final Category parent;
+  final Decimal total;
+  final List<_ChildTotal> children;
+  const _GroupTotal(this.parent, this.total, this.children);
+}
+
+/// Expenses grouped by principal category: header (Impuestos, Casa, ...) with
+/// its total + percentage, then its subcategories that have spending.
+class _GroupedExpenses extends StatelessWidget {
+  final List<_GroupTotal> groups;
+  final String Function(Decimal, Decimal) pct;
+  final Decimal total;
+  final Color color;
+
+  const _GroupedExpenses({
+    required this.groups,
+    required this.pct,
+    required this.total,
+    required this.color,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    if (groups.isEmpty) {
+      return const Card(
+          child: Padding(
+              padding: EdgeInsets.all(20),
+              child: Center(child: Text('Sin datos en el periodo'))));
+    }
+    final max = groups.first.total;
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(14),
+        child: Column(
+          children: [
+            for (final g in groups)
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 7),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Expanded(
+                          child: Text(g.parent.name,
+                              style: const TextStyle(
+                                  fontSize: 14, fontWeight: FontWeight.w700)),
+                        ),
+                        Text(
+                            '${MoneyFormat.format(g.total)}  ·  ${pct(g.total, total)}',
+                            style: const TextStyle(
+                                fontSize: 12, fontWeight: FontWeight.w700)),
+                      ],
+                    ),
+                    const SizedBox(height: 4),
+                    AnimatedProgressBar(
+                      value: max == Decimal.zero
+                          ? 0
+                          : (g.total / max).toDouble(),
+                      minHeight: 6,
+                      borderRadius: AppRadii.standard.brXs,
+                      backgroundColor:
+                          Theme.of(context).colorScheme.surfaceContainerHighest,
+                      color: color,
+                    ),
+                    for (final ch in g.children)
+                      if (ch.amount != Decimal.zero)
+                        Padding(
+                          padding: const EdgeInsets.only(left: 10, top: 6),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Expanded(
+                                child: Text('• ${ch.category.name}',
+                                    style: const TextStyle(fontSize: 12)),
+                              ),
+                              Text(
+                                  '${MoneyFormat.format(ch.amount)}  ·  ${pct(ch.amount, total)}',
+                                  style: const TextStyle(fontSize: 11)),
+                            ],
+                          ),
+                        ),
                   ],
                 ),
               ),

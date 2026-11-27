@@ -8,6 +8,7 @@ import 'package:isar/isar.dart';
 import '../../data/models/import_record.dart';
 import '../../data/providers.dart';
 import '../../data/services/excel_importer.dart';
+import '../dashboard/providers/dashboard_provider.dart';
 import 'package:noova_finance/theme/app_theme.dart';
 
 /// Excel import: pick file -> import -> log + history (US2).
@@ -81,6 +82,8 @@ class _ImportScreenState extends ConsumerState<ImportScreen> {
         _importing = false;
         _result = result;
       });
+      // Refresh every data view so new rows (e.g. Impuestos) show immediately.
+      ref.invalidate(dashboardProvider);
       await _loadRecords();
     }
   }

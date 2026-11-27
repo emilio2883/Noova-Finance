@@ -1,7 +1,6 @@
 import 'package:decimal/decimal.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 
 import 'package:noova_finance/theme/app_theme.dart';
 import '../../core/utils/date_utils.dart';
@@ -102,14 +101,7 @@ class _QuincenalScreenState extends ConsumerState<QuincenalScreen> {
   Widget build(BuildContext context) {
     final c = context.app.colors;
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Consumo'),
-        leading: IconButton(
-          icon: const Icon(Icons.home_outlined),
-          tooltip: 'Inicio',
-          onPressed: () => context.go('/dashboard'),
-        ),
-      ),
+      appBar: AppBar(title: const Text('Consumo')),
       floatingActionButton: FloatingActionButton(
         onPressed: _openAdd,
         backgroundColor: c.primary,
@@ -200,15 +192,6 @@ class _QuincenalScreenState extends ConsumerState<QuincenalScreen> {
                 ),
               ),
               const SizedBox(height: 16),
-              _sectionTitle('GASTOS POR CATEGORÍA', c),
-              const SizedBox(height: 8),
-              _CategoryBreakdown(
-                  byCategory: byCat,
-                  categories: data.categories,
-                  pct: _pct,
-                  total: gastos,
-                  color: c.expense),
-              const SizedBox(height: 16),
               _sectionTitle('INGRESOS POR CATEGORÍA', c),
               const SizedBox(height: 8),
               _CategoryBreakdown(
@@ -217,6 +200,15 @@ class _QuincenalScreenState extends ConsumerState<QuincenalScreen> {
                   pct: _pct,
                   total: ingresos,
                   color: c.income),
+              const SizedBox(height: 16),
+              _sectionTitle('GASTOS POR CATEGORÍA', c),
+              const SizedBox(height: 8),
+              _CategoryBreakdown(
+                  byCategory: byCat,
+                  categories: data.categories,
+                  pct: _pct,
+                  total: gastos,
+                  color: c.expense),
               const SizedBox(height: 16),
               _sectionTitle('MOVIMIENTOS (${movs.length})', c),
               const SizedBox(height: 4),

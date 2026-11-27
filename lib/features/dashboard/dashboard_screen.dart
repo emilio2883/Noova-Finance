@@ -61,9 +61,6 @@ class DashboardScreen extends ConsumerWidget {
                   gastos: MoneyFormat.compact(d.gastosAnio),
                   utilidad: MoneyFormat.compact(d.utilidadTotalAnio),
                   utilidadPositiva: d.utilidadTotalAnio >= Decimal.zero,
-                  ahorro: d.ahorroMetasAnio > Decimal.zero
-                      ? MoneyFormat.compact(d.ahorroMetasAnio)
-                      : null,
                 ),
                 _InsightsSection(insights: buildInsights(d)),
                 if (d.globalBudget > Decimal.zero) _GlobalBudgetCard(data: d),
@@ -169,7 +166,7 @@ class _GlobalBudgetCard extends StatelessWidget {
                     const SizedBox(width: 6),
                     Expanded(
                       child: Text(
-                          '${a.name}: ${a.percent}% (umbral ${a.threshold}%)',
+                          '${a.name}: ${a.percent}% (límite ${a.threshold}%)',
                           style: TextStyle(
                               fontSize: 11,
                               color: a.exceeded

@@ -12,7 +12,12 @@ class SavingsGoalRepository {
 
   Future<void> update(SavingsGoal g) => _isar.writeTxn(() => _isar.savingsGoals.put(g));
 
-  Future<void> delete(int id) => _isar.writeTxn(() => _isar.savingsGoals.delete(id));
+  Future<void> delete(int id) async {
+    await _isar.writeTxn(() async {
+      await _isar.savingsContributions.filter().goalIdEqualTo(id).deleteAll();
+      await _isar.savingsGoals.delete(id);
+    });
+  }
 
   Future<SavingsGoal?> getById(int id) => _isar.savingsGoals.get(id);
 
@@ -41,6 +46,47 @@ class SavingsGoalRepository {
           .goalIdEqualTo(goalId)
           .sortByDateDesc()
           .findAll();
+
+  /// Auto-generate monthly contributions for recurring goals up to [now].
+  Future<int> generateRecurring({DateTime? now}) async {
+    final today = now ?? DateTime.now();
+    final nowKey = today.year * 100 + today.month;
+    final goals = await getActive();
+    var count = 0;
+    for (final g in goals) {
+      if (!g.isRecurring || g.periodMonths <= 0) continue;
+      final monthlyBps = g.targetBps ~/ g.periodMonths;
+      if (monthlyBps <= 0) continue;
+      var y = 0, m = 0;
+      if (g.lastAutoMonth == 0) {
+        y = today.year;
+        m = today.month;
+      } else {
+        y = g.lastAutoMonth ~/ 100;
+        m = g.lastAutoMonth % 100;
+        m++;
+        if (m > 12) {
+          m = 1;
+          y++;
+        }
+      }
+      while (y * 100 + m <= nowKey) {
+        await addContribution(g.id, monthlyBps, date: DateTime(y, m, 1));
+        count++;
+        m++;
+        if (m > 12) {
+          m = 1;
+          y++;
+        }
+      }
+      final fresh = await getById(g.id);
+      if (fresh != null) {
+        fresh.lastAutoMonth = nowKey;
+        await update(fresh);
+      }
+    }
+    return count;
+  }
 
   Future<void> deleteContribution(int goalId, SavingsContribution c) async {
     final g = await getById(goalId);

@@ -6,6 +6,7 @@ import 'core/router.dart';
 import 'core/services/notification_service.dart';
 import 'data/database.dart';
 import 'data/repositories/recurring_repo.dart';
+import 'data/repositories/savings_goal_repo.dart';
 import 'data/repositories/settings_repo.dart';
 import 'data/repositories/transaction_repo.dart';
 import 'data/services/recurring_generator.dart';
@@ -21,6 +22,7 @@ Future<void> main() async {
     TransactionRepository(isar),
   );
   await generator.generateDue();
+  await SavingsGoalRepository(isar).generateRecurring();
 
   final settings = await SettingsRepository(isar).get();
   UnlockState.instance.pinRequired =

@@ -1,7 +1,6 @@
 import 'package:decimal/decimal.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 
 import 'package:noova_finance/theme/app_theme.dart';
 import '../../core/utils/decimal_utils.dart';
@@ -14,7 +13,9 @@ import '../../shared/ui/empty_state.dart';
 import '../../shared/ui/error_state.dart';
 import '../../shared/ui/loading_state.dart';
 import '../../shared/widgets/animated_progress_bar.dart';
+import '../../shared/widgets/main_nav_bar.dart';
 import '../../theme/app_radii.dart';
+import '../dashboard/providers/dashboard_provider.dart';
 import 'goals_providers.dart';
 
 class GoalsScreen extends ConsumerWidget {
@@ -26,38 +27,49 @@ class GoalsScreen extends ConsumerWidget {
         text: goal != null ? DecimalUtils.fromBps(goal.targetBps).toString() : '');
     final monthsCtrl = TextEditingController(
         text: (goal?.periodMonths ?? 0) > 0 ? goal!.periodMonths.toString() : '');
+    var recurring = goal?.isRecurring ?? false;
     final saved = await showDialog<bool>(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text(goal == null ? 'Nueva meta' : 'Editar meta'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextField(
-                controller: nameCtrl,
-                decoration: const InputDecoration(
-                    labelText: 'Nombre (ej. Viaje, Fondo de emergencia)')),
-            const SizedBox(height: 8),
-            TextField(
-                controller: targetCtrl,
-                keyboardType: TextInputType.number,
-                decoration: const InputDecoration(labelText: 'Monto objetivo')),
-            const SizedBox(height: 8),
-            TextField(
-                controller: monthsCtrl,
-                keyboardType: TextInputType.number,
-                decoration: const InputDecoration(
-                    labelText: 'Periodo en meses (opcional)')),
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setSt) => AlertDialog(
+          title: Text(goal == null ? 'Nueva meta' : 'Editar meta'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                  controller: nameCtrl,
+                  decoration: const InputDecoration(
+                      labelText: 'Nombre (ej. Viaje, Fondo de emergencia)')),
+              const SizedBox(height: 8),
+              TextField(
+                  controller: targetCtrl,
+                  keyboardType: TextInputType.number,
+                  decoration:
+                      const InputDecoration(labelText: 'Monto objetivo')),
+              const SizedBox(height: 8),
+              TextField(
+                  controller: monthsCtrl,
+                  keyboardType: TextInputType.number,
+                  decoration: const InputDecoration(
+                      labelText: 'Periodo en meses (opcional)')),
+              SwitchListTile(
+                contentPadding: EdgeInsets.zero,
+                title: const Text('Aporte automático mensual'),
+                subtitle: const Text('Sí = se aporta solo cada mes · No = manual'),
+                value: recurring,
+                onChanged: (v) => setSt(() => recurring = v),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+                onPressed: () => Navigator.pop(ctx, false),
+                child: const Text('Cancelar')),
+            FilledButton(
+                onPressed: () => Navigator.pop(ctx, true),
+                child: Text(goal == null ? 'Crear' : 'Guardar')),
           ],
         ),
-        actions: [
-          TextButton(
-              onPressed: () => Navigator.pop(ctx, false),
-              child: const Text('Cancelar')),
-          FilledButton(
-              onPressed: () => Navigator.pop(ctx, true),
-              child: Text(goal == null ? 'Crear' : 'Guardar')),
-        ],
       ),
     );
     if (saved != true) return null;
@@ -70,6 +82,8 @@ class GoalsScreen extends ConsumerWidget {
       targetBps: DecimalUtils.toBps(target),
       savedBps: goal?.savedBps ?? 0,
       periodMonths: months,
+      isRecurring: recurring && months > 0,
+      lastAutoMonth: goal?.lastAutoMonth ?? 0,
     );
   }
 
@@ -79,6 +93,7 @@ class GoalsScreen extends ConsumerWidget {
     final repo = await ref.read(savingsGoalRepoProvider.future);
     await repo.insert(g);
     ref.invalidate(savingsGoalsProvider);
+    ref.invalidate(dashboardProvider);
   }
 
   Future<void> _edit(BuildContext context, WidgetRef ref, SavingsGoal goal) async {
@@ -88,9 +103,11 @@ class GoalsScreen extends ConsumerWidget {
     goal
       ..name = updated.name
       ..targetBps = updated.targetBps
-      ..periodMonths = updated.periodMonths;
+      ..periodMonths = updated.periodMonths
+      ..isRecurring = updated.isRecurring;
     await repo.update(goal);
     ref.invalidate(savingsGoalsProvider);
+    ref.invalidate(dashboardProvider);
   }
 
   Future<void> _delete(BuildContext context, WidgetRef ref, SavingsGoal goal) async {
@@ -98,7 +115,7 @@ class GoalsScreen extends ConsumerWidget {
       context: context,
       builder: (ctx) => AlertDialog(
         title: const Text('Eliminar meta'),
-        content: Text('¿Eliminar "${goal.name}"?'),
+        content: Text('¿Eliminar "${goal.name}" y sus aportes?'),
         actions: [
           TextButton(
               onPressed: () => Navigator.pop(ctx, false),
@@ -115,6 +132,7 @@ class GoalsScreen extends ConsumerWidget {
     final repo = await ref.read(savingsGoalRepoProvider.future);
     await repo.delete(goal.id);
     ref.invalidate(savingsGoalsProvider);
+    ref.invalidate(dashboardProvider);
   }
 
   Future<void> _contribute(BuildContext context, WidgetRef ref, SavingsGoal g) async {
@@ -143,6 +161,69 @@ class GoalsScreen extends ConsumerWidget {
     final repo = await ref.read(savingsGoalRepoProvider.future);
     await repo.addContribution(g.id, DecimalUtils.toBps(amount));
     ref.invalidate(savingsGoalsProvider);
+    ref.invalidate(dashboardProvider);
+  }
+
+  Future<void> _use(BuildContext context, WidgetRef ref, SavingsGoal g) async {
+    final catRepo = await ref.read(categoryRepoProvider.future);
+    final leaves = await catRepo.getLeaves(TransactionType.expense);
+    if (!context.mounted) return;
+    final amountCtrl = TextEditingController();
+    int? catId;
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setSt) => AlertDialog(
+          title: Text('Usar ahorro de ${g.name}'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                  controller: amountCtrl,
+                  keyboardType: TextInputType.number,
+                  decoration: const InputDecoration(labelText: 'Monto a usar')),
+              const SizedBox(height: 8),
+              DropdownButtonFormField<int>(
+                value: catId,
+                isExpanded: true,
+                decoration:
+                    const InputDecoration(labelText: 'Categoría del gasto'),
+                items: [
+                  for (final cat in leaves)
+                    DropdownMenuItem(value: cat.id, child: Text(cat.name)),
+                ],
+                onChanged: (v) => setSt(() => catId = v),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+                onPressed: () => Navigator.pop(ctx, false),
+                child: const Text('Cancelar')),
+            FilledButton(
+                onPressed: () => Navigator.pop(ctx, true),
+                child: const Text('Registrar gasto')),
+          ],
+        ),
+      ),
+    );
+    if (ok != true || catId == null) return;
+    final amount = DecimalUtils.tryParse(amountCtrl.text);
+    if (amount == null || amount <= Decimal.zero) return;
+    final txnRepo = await ref.read(transactionRepoProvider.future);
+    await txnRepo.insert(Transaction(
+      date: DateTime.now(),
+      amountBps: DecimalUtils.toBps(amount),
+      type: TransactionType.expense,
+      categoryId: catId!,
+      description: 'Uso de meta ${g.name}',
+    ));
+    final repo = await ref.read(savingsGoalRepoProvider.future);
+    g.savedBps -= DecimalUtils.toBps(amount);
+    if (g.savedBps < 0) g.savedBps = 0;
+    await repo.update(g);
+    ref.invalidate(savingsGoalsProvider);
+    ref.invalidate(dashboardProvider);
   }
 
   Future<void> _showContributions(
@@ -182,9 +263,9 @@ class GoalsScreen extends ConsumerWidget {
                       contentPadding: EdgeInsets.zero,
                       leading: Icon(Icons.savings_outlined,
                           color: context.app.colors.income),
-                      title: Text(MoneyFormat.format(DecimalUtils.fromBps(c.amountBps))),
-                      subtitle: Text(
-                          '${c.date.day}/${c.date.month}/${c.date.year}'),
+                      title: Text(
+                          MoneyFormat.format(DecimalUtils.fromBps(c.amountBps))),
+                      subtitle: Text('${c.date.day}/${c.date.month}/${c.date.year}'),
                       trailing: IconButton(
                         tooltip: 'Eliminar aporte',
                         icon: Icon(Icons.delete_outline,
@@ -192,6 +273,7 @@ class GoalsScreen extends ConsumerWidget {
                         onPressed: () async {
                           await repo.deleteContribution(g.id, c);
                           ref.invalidate(savingsGoalsProvider);
+                          ref.invalidate(dashboardProvider);
                           if (ctx.mounted) Navigator.pop(ctx);
                         },
                       ),
@@ -204,90 +286,17 @@ class GoalsScreen extends ConsumerWidget {
     );
   }
 
-  Future<void> _use(BuildContext context, WidgetRef ref, SavingsGoal g) async {
-    final catRepo = await ref.read(categoryRepoProvider.future);
-    final leaves = await catRepo.getLeaves(TransactionType.expense);
-    if (!context.mounted) return;
-    final amountCtrl = TextEditingController();
-    int? catId;
-    final ok = await showDialog<bool>(
-      context: context,
-      builder: (ctx) => StatefulBuilder(
-        builder: (ctx, setSt) => AlertDialog(
-          title: Text('Usar ahorro de ${g.name}'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextField(
-                  controller: amountCtrl,
-                  keyboardType: TextInputType.number,
-                  decoration:
-                      const InputDecoration(labelText: 'Monto a usar')),
-              const SizedBox(height: 8),
-              DropdownButton<int?>(
-                isExpanded: true,
-                value: catId,
-                hint: const Text('Categoría del gasto'),
-                items: [
-                  for (final cat in leaves)
-                    DropdownMenuItem(value: cat.id, child: Text(cat.name)),
-                ],
-                onChanged: (v) => setSt(() => catId = v),
-              ),
-            ],
-          ),
-          actions: [
-            TextButton(
-                onPressed: () => Navigator.pop(ctx, false),
-                child: const Text('Cancelar')),
-            FilledButton(
-                onPressed: () => Navigator.pop(ctx, true),
-                child: const Text('Registrar gasto')),
-          ],
-        ),
-      ),
-    );
-    if (ok != true || catId == null) return;
-    final amount = DecimalUtils.tryParse(amountCtrl.text);
-    if (amount == null || amount <= Decimal.zero) return;
-    final txnRepo = await ref.read(transactionRepoProvider.future);
-    await txnRepo.insert(Transaction(
-      date: DateTime.now(),
-      amountBps: DecimalUtils.toBps(amount),
-      type: TransactionType.expense,
-      categoryId: catId!,
-      description: 'Uso de meta ${g.name}',
-    ));
-    final repo = await ref.read(savingsGoalRepoProvider.future);
-    g.savedBps -= DecimalUtils.toBps(amount);
-    if (g.savedBps < 0) g.savedBps = 0;
-    await repo.update(g);
-    ref.invalidate(savingsGoalsProvider);
-  }
-
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final async = ref.watch(savingsGoalsProvider);
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Metas de ahorro'),
-        leading: IconButton(
-          icon: const Icon(Icons.home_outlined),
-          tooltip: 'Inicio',
-          onPressed: () {
-            if (context.canPop()) {
-              context.pop();
-            } else {
-              context.go('/dashboard');
-            }
-          },
-        ),
-      ),
+      appBar: AppBar(title: const Text('Metas de ahorro')),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => _create(context, ref),
         icon: const Icon(Icons.add),
         label: const Text('Nueva meta'),
       ),
+      bottomNavigationBar: const MainNavBar(location: '/goals'),
       body: async.when(
         loading: () => const LoadingState(),
         error: (e, _) => ErrorState(
@@ -395,7 +404,7 @@ class _GoalCard extends StatelessWidget {
                 style: TextStyle(fontSize: 12, color: c.textSecondary)),
             if (goal.periodMonths > 0)
               Text(
-                  'Aporte: ${MoneyFormat.format(DecimalUtils.fromBps(goal.targetBps ~/ goal.periodMonths))}/mes · ${goal.periodMonths} meses',
+                  '${goal.isRecurring ? "Automático" : "Manual"}: ${MoneyFormat.format(DecimalUtils.fromBps(goal.targetBps ~/ goal.periodMonths))}/mes · ${goal.periodMonths} meses',
                   style: TextStyle(fontSize: 11, color: c.textSecondary)),
             const SizedBox(height: 4),
             Row(

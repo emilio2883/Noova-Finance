@@ -42,23 +42,33 @@ const SavingsGoalSchema = CollectionSchema(
       name: r'isActive',
       type: IsarType.bool,
     ),
-    r'name': PropertySchema(
+    r'isRecurring': PropertySchema(
       id: 5,
+      name: r'isRecurring',
+      type: IsarType.bool,
+    ),
+    r'lastAutoMonth': PropertySchema(
+      id: 6,
+      name: r'lastAutoMonth',
+      type: IsarType.long,
+    ),
+    r'name': PropertySchema(
+      id: 7,
       name: r'name',
       type: IsarType.string,
     ),
     r'periodMonths': PropertySchema(
-      id: 6,
+      id: 8,
       name: r'periodMonths',
       type: IsarType.long,
     ),
     r'savedBps': PropertySchema(
-      id: 7,
+      id: 9,
       name: r'savedBps',
       type: IsarType.long,
     ),
     r'targetBps': PropertySchema(
-      id: 8,
+      id: 10,
       name: r'targetBps',
       type: IsarType.long,
     )
@@ -99,10 +109,12 @@ void _savingsGoalSerialize(
   writer.writeDateTime(offsets[2], object.deadline);
   writer.writeString(offsets[3], object.iconName);
   writer.writeBool(offsets[4], object.isActive);
-  writer.writeString(offsets[5], object.name);
-  writer.writeLong(offsets[6], object.periodMonths);
-  writer.writeLong(offsets[7], object.savedBps);
-  writer.writeLong(offsets[8], object.targetBps);
+  writer.writeBool(offsets[5], object.isRecurring);
+  writer.writeLong(offsets[6], object.lastAutoMonth);
+  writer.writeString(offsets[7], object.name);
+  writer.writeLong(offsets[8], object.periodMonths);
+  writer.writeLong(offsets[9], object.savedBps);
+  writer.writeLong(offsets[10], object.targetBps);
 }
 
 SavingsGoal _savingsGoalDeserialize(
@@ -117,10 +129,12 @@ SavingsGoal _savingsGoalDeserialize(
     deadline: reader.readDateTimeOrNull(offsets[2]),
     iconName: reader.readStringOrNull(offsets[3]) ?? 'savings',
     isActive: reader.readBoolOrNull(offsets[4]) ?? true,
-    name: reader.readString(offsets[5]),
-    periodMonths: reader.readLongOrNull(offsets[6]) ?? 0,
-    savedBps: reader.readLongOrNull(offsets[7]) ?? 0,
-    targetBps: reader.readLong(offsets[8]),
+    isRecurring: reader.readBoolOrNull(offsets[5]) ?? false,
+    lastAutoMonth: reader.readLongOrNull(offsets[6]) ?? 0,
+    name: reader.readString(offsets[7]),
+    periodMonths: reader.readLongOrNull(offsets[8]) ?? 0,
+    savedBps: reader.readLongOrNull(offsets[9]) ?? 0,
+    targetBps: reader.readLong(offsets[10]),
   );
   object.id = id;
   return object;
@@ -144,12 +158,16 @@ P _savingsGoalDeserializeProp<P>(
     case 4:
       return (reader.readBoolOrNull(offset) ?? true) as P;
     case 5:
-      return (reader.readString(offset)) as P;
+      return (reader.readBoolOrNull(offset) ?? false) as P;
     case 6:
       return (reader.readLongOrNull(offset) ?? 0) as P;
     case 7:
-      return (reader.readLongOrNull(offset) ?? 0) as P;
+      return (reader.readString(offset)) as P;
     case 8:
+      return (reader.readLongOrNull(offset) ?? 0) as P;
+    case 9:
+      return (reader.readLongOrNull(offset) ?? 0) as P;
+    case 10:
       return (reader.readLong(offset)) as P;
     default:
       throw IsarError('Unknown property with id $propertyId');
@@ -650,6 +668,72 @@ extension SavingsGoalQueryFilter
     });
   }
 
+  QueryBuilder<SavingsGoal, SavingsGoal, QAfterFilterCondition>
+      isRecurringEqualTo(bool value) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'isRecurring',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<SavingsGoal, SavingsGoal, QAfterFilterCondition>
+      lastAutoMonthEqualTo(int value) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'lastAutoMonth',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<SavingsGoal, SavingsGoal, QAfterFilterCondition>
+      lastAutoMonthGreaterThan(
+    int value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'lastAutoMonth',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<SavingsGoal, SavingsGoal, QAfterFilterCondition>
+      lastAutoMonthLessThan(
+    int value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'lastAutoMonth',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<SavingsGoal, SavingsGoal, QAfterFilterCondition>
+      lastAutoMonthBetween(
+    int lower,
+    int upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'lastAutoMonth',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+      ));
+    });
+  }
+
   QueryBuilder<SavingsGoal, SavingsGoal, QAfterFilterCondition> nameEqualTo(
     String value, {
     bool caseSensitive = true,
@@ -1017,6 +1101,31 @@ extension SavingsGoalQuerySortBy
     });
   }
 
+  QueryBuilder<SavingsGoal, SavingsGoal, QAfterSortBy> sortByIsRecurring() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'isRecurring', Sort.asc);
+    });
+  }
+
+  QueryBuilder<SavingsGoal, SavingsGoal, QAfterSortBy> sortByIsRecurringDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'isRecurring', Sort.desc);
+    });
+  }
+
+  QueryBuilder<SavingsGoal, SavingsGoal, QAfterSortBy> sortByLastAutoMonth() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'lastAutoMonth', Sort.asc);
+    });
+  }
+
+  QueryBuilder<SavingsGoal, SavingsGoal, QAfterSortBy>
+      sortByLastAutoMonthDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'lastAutoMonth', Sort.desc);
+    });
+  }
+
   QueryBuilder<SavingsGoal, SavingsGoal, QAfterSortBy> sortByName() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'name', Sort.asc);
@@ -1141,6 +1250,31 @@ extension SavingsGoalQuerySortThenBy
     });
   }
 
+  QueryBuilder<SavingsGoal, SavingsGoal, QAfterSortBy> thenByIsRecurring() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'isRecurring', Sort.asc);
+    });
+  }
+
+  QueryBuilder<SavingsGoal, SavingsGoal, QAfterSortBy> thenByIsRecurringDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'isRecurring', Sort.desc);
+    });
+  }
+
+  QueryBuilder<SavingsGoal, SavingsGoal, QAfterSortBy> thenByLastAutoMonth() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'lastAutoMonth', Sort.asc);
+    });
+  }
+
+  QueryBuilder<SavingsGoal, SavingsGoal, QAfterSortBy>
+      thenByLastAutoMonthDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'lastAutoMonth', Sort.desc);
+    });
+  }
+
   QueryBuilder<SavingsGoal, SavingsGoal, QAfterSortBy> thenByName() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'name', Sort.asc);
@@ -1224,6 +1358,18 @@ extension SavingsGoalQueryWhereDistinct
     });
   }
 
+  QueryBuilder<SavingsGoal, SavingsGoal, QDistinct> distinctByIsRecurring() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'isRecurring');
+    });
+  }
+
+  QueryBuilder<SavingsGoal, SavingsGoal, QDistinct> distinctByLastAutoMonth() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'lastAutoMonth');
+    });
+  }
+
   QueryBuilder<SavingsGoal, SavingsGoal, QDistinct> distinctByName(
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
@@ -1285,6 +1431,18 @@ extension SavingsGoalQueryProperty
   QueryBuilder<SavingsGoal, bool, QQueryOperations> isActiveProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'isActive');
+    });
+  }
+
+  QueryBuilder<SavingsGoal, bool, QQueryOperations> isRecurringProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'isRecurring');
+    });
+  }
+
+  QueryBuilder<SavingsGoal, int, QQueryOperations> lastAutoMonthProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'lastAutoMonth');
     });
   }
 

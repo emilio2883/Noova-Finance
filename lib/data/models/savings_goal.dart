@@ -23,6 +23,12 @@ class SavingsGoal {
 
   DateTime? deadline;
   bool isActive;
+
+  /// If true, monthly aportes are auto-generated from target/periodMonths.
+  bool isRecurring;
+
+  /// year*100+month of the last auto-generated contribution (0 = none).
+  int lastAutoMonth;
   DateTime? createdAt;
 
   SavingsGoal({
@@ -34,6 +40,8 @@ class SavingsGoal {
     this.iconName = 'savings',
     this.deadline,
     this.isActive = true,
+    this.isRecurring = false,
+    this.lastAutoMonth = 0,
     DateTime? createdAt,
   }) : createdAt = createdAt ?? DateTime.now();
 }

@@ -22,8 +22,9 @@ final isarProvider = FutureProvider<Isar>((ref) async {
 /// Repositories
 final categoryRepoProvider = FutureProvider<CategoryRepository>((ref) async {
   final isar = await ref.watch(isarProvider.future);
-  // No auto-seed: new users get categories from their imported file (or manual).
-  return CategoryRepository(isar);
+  final repo = CategoryRepository(isar);
+  await repo.seedDefaults(); // seed 26 categories on first launch
+  return repo;
 });
 
 final transactionRepoProvider = FutureProvider<TransactionRepository>((ref) async {

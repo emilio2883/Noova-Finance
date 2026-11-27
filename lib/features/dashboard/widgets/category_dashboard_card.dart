@@ -75,7 +75,7 @@ class CategoryDashboardCard extends ConsumerWidget {
             Text(spend.parent.name,
                 style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
             const SizedBox(height: 4),
-            Text('Gasto del mes: ${MoneyFormat.format(spend.total)}',
+            Text('Gasto quincena: ${MoneyFormat.format(spend.total)}',
                 style: TextStyle(color: context.app.colors.textSecondary)),
             const SizedBox(height: 16),
             for (final child in spend.children)

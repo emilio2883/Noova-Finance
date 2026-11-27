@@ -13,9 +13,6 @@ import '../../data/models/budget.dart';
 import '../../data/models/category.dart';
 import '../../data/models/recurring_rule.dart';
 import '../../data/models/transaction.dart';
-import '../../data/models/import_record.dart';
-import '../../data/models/savings_contribution.dart';
-import '../../data/models/savings_goal.dart';
 import '../../data/providers.dart';
 import '../dashboard/providers/dashboard_provider.dart';
 import '../../shared/widgets/main_nav_bar.dart';
@@ -156,7 +153,7 @@ class SettingsScreen extends ConsumerWidget {
       builder: (ctx) => AlertDialog(
         title: const Text('Borrar todos los datos'),
         content: const Text(
-            'Se eliminarán TODAS las transacciones, presupuestos, metas, aportes e historial. También se borran las categorías y subcategorías. Esta acción no se puede deshacer.'),
+            'Se eliminarán TODAS las transacciones, presupuestos y el historial importado. Las categorías se reinician. Esta acción no se puede deshacer.'),
         actions: [
           TextButton(
               onPressed: () => Navigator.pop(ctx, false),
@@ -175,15 +172,11 @@ class SettingsScreen extends ConsumerWidget {
       await isar.transactions.clear();
       await isar.budgets.clear();
       await isar.recurringRules.clear();
-      await isar.savingsContributions.clear();
-      await isar.savingsGoals.clear();
-      await isar.importRecords.clear();
       await isar.categorys.clear();
     });
-    // New generic onboarding: NO re-seed. Categories come from the user's
-    // imported Excel (suggested automatically) or are created manually.
+    final catRepo = await ref.read(categoryRepoProvider.future);
+    await catRepo.seedDefaults();
     ref.invalidate(categoryRepoProvider);
-    ref.invalidate(transactionRepoProvider);
     ref.invalidate(dashboardProvider);
     if (context.mounted) {
       ScaffoldMessenger.of(context).showSnackBar(

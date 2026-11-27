@@ -8,7 +8,6 @@ import '../../core/utils/money_format.dart';
 import '../../data/models/budget.dart';
 import '../../data/models/transaction.dart';
 import '../../data/providers.dart';
-import '../../shared/ui/empty_state.dart';
 import '../../shared/widgets/main_nav_bar.dart';
 import '../dashboard/providers/dashboard_provider.dart';
 
@@ -123,7 +122,7 @@ class _BudgetsScreenState extends ConsumerState<BudgetsScreen> {
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => _edit(context),
         icon: const Icon(Icons.add),
-        label: const Text('Crear presupuesto'),
+        label: const Text('Nuevo presupuesto'),
       ),
       bottomNavigationBar: const MainNavBar(location: '/budgets'),
       body: FutureBuilder<List<Budget>>(
@@ -167,11 +166,11 @@ class _BudgetsScreenState extends ConsumerState<BudgetsScreen> {
                   ),
                   const SizedBox(height: 8),
                   if (budgets.isEmpty)
-                    const EmptyState(
-                      icon: Icons.pie_chart_outline,
-                      title: 'Crea tu primer presupuesto',
-                      message:
-                          'Elige una subcategoría y define el monto y el límite de alerta.',
+                    const Padding(
+                      padding: EdgeInsets.all(32),
+                      child: Center(
+                          child: Text(
+                              'Aún no hay presupuestos.\nCrea uno con el botón +')),
                     ),
                   for (final b in budgets)
                     Card(

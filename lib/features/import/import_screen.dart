@@ -201,15 +201,6 @@ class _ImportScreenState extends ConsumerState<ImportScreen> {
                     '${r.imported} importadas · ${r.skipped} duplicadas',
                     style: const TextStyle(fontSize: 11),
                   ),
-                  trailing: IconButton(
-                    tooltip: 'Borrar del historial',
-                    icon: Icon(Icons.delete_outline, color: context.app.colors.expense),
-                    onPressed: () async {
-                      final isar = await ref.read(isarProvider.future);
-                      await isar.writeTxn(() => isar.importRecords.delete(r.id));
-                      await _loadRecords();
-                    },
-                  ),
                 ),
               ),
         ],

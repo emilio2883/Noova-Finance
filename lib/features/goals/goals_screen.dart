@@ -294,7 +294,7 @@ class GoalsScreen extends ConsumerWidget {
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => _create(context, ref),
         icon: const Icon(Icons.add),
-        label: const Text('Crear meta'),
+        label: const Text('Nueva meta'),
       ),
       bottomNavigationBar: const MainNavBar(location: '/goals'),
       body: async.when(
@@ -307,8 +307,9 @@ class GoalsScreen extends ConsumerWidget {
             return EmptyState(
               icon: Icons.savings_outlined,
               title: 'Aún no tienes metas',
-              message:
-                  'Crea tu primera meta de ahorro para empezar a apartar dinero.',
+              message: 'Crea tu primera meta de ahorro para empezar a apartar dinero.',
+              actionLabel: 'Crear meta',
+              onAction: () => _create(context, ref),
             );
           }
           return ListView.separated(

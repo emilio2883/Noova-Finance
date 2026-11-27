@@ -25,7 +25,11 @@ Documento vivo. Se actualiza al cerrar cada feature. Estado: en progreso.
   `Icons.bar_chart` en AppBar de Consumo.
 - Criterio: las 3 gráficas usan datos reales y cambian al mover el periodo.
 
-### 2) Comparativos y promedios  ⏳
+### 2) Comparativos y promedios  ✅
+- `SaldoCalculator.deltaPeriodo / pctCambio / promedioDiario` (puros, testeados).
+- `lib/features/charts/comparatives.dart`: deltas vs periodo anterior,
+  promedios (diario / mes / quincena, 3m), tendencia de gasto, top movers.
+- Sección "Comparativos" en Análisis. Tests: `comparatives_test.dart` (3).
 ### 3) Búsqueda y filtros avanzados  ⏳
 ### 4) UI de recurrentes + calendario de pagos  ⏳
 ### 5) Gestor de suscripciones  ⏳

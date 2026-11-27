@@ -1,6 +1,7 @@
 import 'package:decimal/decimal.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import 'package:noova_finance/theme/app_theme.dart';
 import '../../shared/ui/error_state.dart';
@@ -35,7 +36,15 @@ class DashboardScreen extends ConsumerWidget {
         centerTitle: false,
         titleSpacing: 14,
         title: const NoovaLogoImage(),
-        actions: const [ProfileGreeting(), SizedBox(width: 12)],
+        actions: [
+          IconButton(
+            tooltip: 'Ver análisis',
+            icon: const Icon(Icons.insights_outlined),
+            onPressed: () => context.push('/charts'),
+          ),
+          const ProfileGreeting(),
+          const SizedBox(width: 12),
+        ],
       ),
       body: AnimatedSwitcher(
         duration: AppMotion.medium,

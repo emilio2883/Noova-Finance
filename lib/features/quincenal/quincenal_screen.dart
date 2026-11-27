@@ -1,6 +1,7 @@
 import 'package:decimal/decimal.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import 'package:noova_finance/theme/app_theme.dart';
 import '../../core/utils/date_utils.dart';
@@ -132,7 +133,16 @@ class _QuincenalScreenState extends ConsumerState<QuincenalScreen> {
   Widget build(BuildContext context) {
     final c = context.app.colors;
     return Scaffold(
-      appBar: AppBar(title: const Text('Consumo')),
+      appBar: AppBar(
+        title: const Text('Consumo'),
+        actions: [
+          IconButton(
+            tooltip: 'Ver análisis',
+            icon: const Icon(Icons.bar_chart),
+            onPressed: () => context.push('/charts'),
+          ),
+        ],
+      ),
       floatingActionButton: FloatingActionButton(
         onPressed: _openAdd,
         backgroundColor: c.primary,

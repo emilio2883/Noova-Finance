@@ -1,10 +1,13 @@
 import 'package:decimal/decimal.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:isar/isar.dart';
 
 import '../../../core/utils/date_utils.dart';
 import '../../../data/models/category.dart';
+import '../../../data/models/savings_contribution.dart';
 import '../../../data/models/transaction.dart';
 import '../../../data/providers.dart';
+import '../../../core/utils/decimal_utils.dart';
 import '../../../data/services/saldo_calculator.dart';
 
 /// Spending + budget for a subcategory.
@@ -63,6 +66,8 @@ class DashboardData {
   final Decimal gastosAnio;
   final Decimal utilidadAnio;
   final List<BudgetAlert> budgetAlerts;
+  final Decimal ahorroMetasAnio;
+  final Decimal utilidadTotalAnio;
   final List<CategorySpend> categorySpending; // sorted desc by total
   final Decimal globalBudget;
   final Decimal globalSpent; // spent within budgeted categories this quincena
@@ -77,6 +82,8 @@ class DashboardData {
     required this.gastosAnio,
     required this.utilidadAnio,
     required this.budgetAlerts,
+    required this.ahorroMetasAnio,
+    required this.utilidadTotalAnio,
     required this.categorySpending,
     required this.globalBudget,
     required this.globalSpent,
@@ -96,8 +103,6 @@ final dashboardProvider = FutureProvider.autoDispose<DashboardData>((ref) async 
   final monthEnd = QuincenaUtils.monthEnd(now);
   final yStart = QuincenaUtils.yearStart(now);
   final yEnd = QuincenaUtils.yearEnd(now);
-  final qStart = QuincenaUtils.quincenaStart(now);
-  final qEnd = QuincenaUtils.quincenaEnd(now);
 
   final budgets = await budgetRepo.getActive();
   final budgetByCat = <int, Decimal>{
@@ -105,7 +110,8 @@ final dashboardProvider = FutureProvider.autoDispose<DashboardData>((ref) async 
   };
 
   // Expense totals per category for the current quincena.
-  final spentByCat = SaldoCalculator.gastosPorCategoria(all, qStart, qEnd);
+  // Inicio shows MONTH aggregation (quincena lives in Consumo).
+  final spentByCat = SaldoCalculator.gastosPorCategoria(all, monthStart, monthEnd);
 
   // Build principal rollups.
   final principals = await catRepo.getTopLevel(TransactionType.expense);
@@ -154,6 +160,14 @@ final dashboardProvider = FutureProvider.autoDispose<DashboardData>((ref) async 
   // Dynamic ordering: highest spending first.
   categorySpending.sort((a, b) => b.total.compareTo(a.total));
 
+  // Savings goals contributions in the current year (added to utilidad).
+  final isar = await ref.watch(isarProvider.future);
+  final allContribs = await isar.savingsContributions.where().findAll();
+  final yearContribs = allContribs
+      .where((c) => !c.date.isBefore(yStart) && !c.date.isAfter(yEnd));
+  final ahorroMetasAnio = DecimalUtils.fromBps(
+      yearContribs.fold<int>(0, (a, c) => a + c.amountBps));
+
   // Budget threshold alerts (manual alertThreshold per budget).
   final budgetAlerts = <BudgetAlert>[];
   for (final b in budgets) {
@@ -182,6 +196,8 @@ final dashboardProvider = FutureProvider.autoDispose<DashboardData>((ref) async 
     gastosAnio: SaldoCalculator.gastos(all, yStart, yEnd),
     utilidadAnio: SaldoCalculator.utilidad(all, yStart, yEnd),
     budgetAlerts: budgetAlerts,
+    ahorroMetasAnio: ahorroMetasAnio,
+    utilidadTotalAnio: SaldoCalculator.utilidad(all, yStart, yEnd) + ahorroMetasAnio,
     categorySpending: categorySpending,
     globalBudget: globalBudget,
     globalSpent: globalSpent,

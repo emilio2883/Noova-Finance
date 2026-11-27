@@ -2,12 +2,13 @@ import 'package:flutter/material.dart';
 
 import 'package:noova_finance/theme/app_theme.dart';
 
-/// Monthly ingresos / gastos / utilidad summary card.
+/// Yearly ingreso / gasto / utilidad summary. Utilidad includes savings goals.
 class UtilidadCard extends StatelessWidget {
   final String ingresos;
   final String gastos;
   final String utilidad;
   final bool utilidadPositiva;
+  final String? ahorro;
 
   const UtilidadCard({
     super.key,
@@ -15,6 +16,7 @@ class UtilidadCard extends StatelessWidget {
     required this.gastos,
     required this.utilidad,
     required this.utilidadPositiva,
+    this.ahorro,
   });
 
   @override
@@ -23,21 +25,26 @@ class UtilidadCard extends StatelessWidget {
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(16),
-        child: Row(
+        child: Column(
           children: [
-            Expanded(
-              child: _MiniStat(label: 'Ingresos', value: ingresos, color: c.income),
+            Row(
+              children: [
+                Expanded(child: _MiniStat(label: 'Ingresos', value: ingresos, color: c.income)),
+                Expanded(child: _MiniStat(label: 'Gastos', value: gastos, color: c.expense)),
+                Expanded(
+                  child: _MiniStat(
+                    label: 'Utilidad',
+                    value: utilidad,
+                    color: utilidadPositiva ? c.income : c.expense,
+                  ),
+                ),
+              ],
             ),
-            Expanded(
-              child: _MiniStat(label: 'Gastos', value: gastos, color: c.expense),
-            ),
-            Expanded(
-              child: _MiniStat(
-                label: 'Utilidad',
-                value: utilidad,
-                color: utilidadPositiva ? c.income : c.expense,
-              ),
-            ),
+            if (ahorro != null) ...[
+              const SizedBox(height: 8),
+              Text('Incluye ahorro en metas: $ahorro',
+                  style: TextStyle(fontSize: 11, color: c.textSecondary)),
+            ],
           ],
         ),
       ),
@@ -56,25 +63,17 @@ class _MiniStat extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        Text(
-          label.toUpperCase(),
-          style: TextStyle(
-            color: context.app.colors.textSecondary,
-            fontSize: 10,
-            letterSpacing: 1,
-          ),
-        ),
+        Text(label.toUpperCase(),
+            style: TextStyle(
+                color: context.app.colors.textSecondary,
+                fontSize: 10,
+                letterSpacing: 1)),
         const SizedBox(height: 4),
         FittedBox(
           fit: BoxFit.scaleDown,
-          child: Text(
-            value,
-            style: TextStyle(
-              fontSize: 15,
-              fontWeight: FontWeight.bold,
-              color: color,
-            ),
-          ),
+          child: Text(value,
+              style: TextStyle(
+                  fontSize: 15, fontWeight: FontWeight.bold, color: color)),
         ),
       ],
     );

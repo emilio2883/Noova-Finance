@@ -90,7 +90,7 @@ class _BudgetEditorSheetState extends ConsumerState<BudgetEditorSheet> {
                   const Text('Presupuestos por quincena',
                       style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                   const SizedBox(height: 4),
-                  Text('Monto y umbral de alerta (%) por subcategoría',
+                  Text('Monto y límite de alerta (%) por subcategoría',
                       style: TextStyle(
                           fontSize: 12, color: context.app.colors.textSecondary)),
                   const SizedBox(height: 16),
@@ -115,7 +115,7 @@ class _BudgetEditorSheetState extends ConsumerState<BudgetEditorSheet> {
                             controller: _threshold[cat.id],
                             keyboardType: TextInputType.number,
                             decoration:
-                                const InputDecoration(labelText: 'Umbral %'),
+                                const InputDecoration(labelText: 'Límite %'),
                           ),
                         ),
                         IconButton(

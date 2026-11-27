@@ -21,13 +21,11 @@ import '../transaction/transaction_detail_screen.dart';
 class _Data {
   final List<Transaction> txns;
   final Map<int, Category> categories;
-  final List<Category> leaves;
-  _Data(this.txns, this.categories, this.leaves);
+  _Data(this.txns, this.categories);
 }
 
 const _monthNames = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
 
-/// "Consumo": period-filtered spending hub with values + percentages (US3/US5).
 class QuincenalScreen extends ConsumerStatefulWidget {
   const QuincenalScreen({super.key});
 
@@ -38,26 +36,18 @@ class QuincenalScreen extends ConsumerStatefulWidget {
 class _QuincenalScreenState extends ConsumerState<QuincenalScreen> {
   int _view = 0; // 0=quincena, 1=mes, 2=año
   DateTime _anchor = DateTime.now();
-  int? _filterCategoryId;
 
   Future<_Data> _load() async {
     final txnRepo = await ref.read(transactionRepoProvider.future);
     final catRepo = await ref.read(categoryRepoProvider.future);
     final txns = await txnRepo.getAll();
     final cats = await catRepo.getAll();
-    final leaves = [
-      ...await catRepo.getLeaves(TransactionType.expense),
-      ...await catRepo.getLeaves(TransactionType.income),
-    ];
-    return _Data(txns, {for (final c in cats) c.id: c}, leaves);
+    return _Data(txns, {for (final c in cats) c.id: c});
   }
 
   (DateTime, DateTime) get _range {
     if (_view == 0) {
-      return (
-        QuincenaUtils.quincenaStart(_anchor),
-        QuincenaUtils.quincenaEnd(_anchor)
-      );
+      return (QuincenaUtils.quincenaStart(_anchor), QuincenaUtils.quincenaEnd(_anchor));
     } else if (_view == 1) {
       return (QuincenaUtils.monthStart(_anchor), QuincenaUtils.monthEnd(_anchor));
     }
@@ -146,19 +136,17 @@ class _QuincenalScreenState extends ConsumerState<QuincenalScreen> {
           final gastos = SaldoCalculator.gastos(data.txns, start, end);
           final utilidad = ingresos - gastos;
           final byCat = SaldoCalculator.gastosPorCategoria(data.txns, start, end);
+          final ingByCat =
+              SaldoCalculator.ingresosPorCategoria(data.txns, start, end);
 
-          var movs = data.txns
+          final movs = data.txns
               .where((t) => !t.date.isBefore(start) && !t.date.isAfter(end))
-              .toList();
-          if (_filterCategoryId != null) {
-            movs = movs.where((t) => t.categoryId == _filterCategoryId).toList();
-          }
-          movs.sort((a, b) => b.date.compareTo(a.date));
+              .toList()
+            ..sort((a, b) => b.date.compareTo(a.date));
 
           return ListView(
             padding: const EdgeInsets.fromLTRB(16, 12, 16, 96),
             children: [
-              // Compact period filter: segmented + arrows (no long list)
               Card(
                 child: Padding(
                   padding: const EdgeInsets.all(12),
@@ -212,41 +200,25 @@ class _QuincenalScreenState extends ConsumerState<QuincenalScreen> {
                 ),
               ),
               const SizedBox(height: 16),
-              Text('GASTOS POR CATEGORÍA',
-                  style: TextStyle(
-                      color: c.textSecondary, fontSize: 12, letterSpacing: 1.5)),
+              _sectionTitle('GASTOS POR CATEGORÍA', c),
               const SizedBox(height: 8),
               _CategoryBreakdown(
                   byCategory: byCat,
                   categories: data.categories,
                   pct: _pct,
-                  gastos: gastos),
+                  total: gastos,
+                  color: c.expense),
               const SizedBox(height: 16),
-              Row(
-                children: [
-                  const Icon(Icons.filter_list, size: 18),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: DropdownButton<int?>(
-                      isExpanded: true,
-                      value: _filterCategoryId,
-                      hint: const Text('Todas las categorías'),
-                      dropdownColor: Theme.of(context).colorScheme.surface,
-                      items: [
-                        const DropdownMenuItem<int?>(
-                            value: null, child: Text('Todas las categorías')),
-                        for (final cat in data.leaves)
-                          DropdownMenuItem<int?>(
-                              value: cat.id, child: Text(cat.name)),
-                      ],
-                      onChanged: (v) => setState(() => _filterCategoryId = v),
-                    ),
-                  ),
-                ],
-              ),
-              Text('MOVIMIENTOS (${movs.length})',
-                  style: TextStyle(
-                      color: c.textSecondary, fontSize: 12, letterSpacing: 1.5)),
+              _sectionTitle('INGRESOS POR CATEGORÍA', c),
+              const SizedBox(height: 8),
+              _CategoryBreakdown(
+                  byCategory: ingByCat,
+                  categories: data.categories,
+                  pct: _pct,
+                  total: ingresos,
+                  color: c.income),
+              const SizedBox(height: 16),
+              _sectionTitle('MOVIMIENTOS (${movs.length})', c),
               const SizedBox(height: 4),
               if (movs.isEmpty)
                 const Padding(
@@ -292,6 +264,10 @@ class _QuincenalScreenState extends ConsumerState<QuincenalScreen> {
     );
   }
 
+  Widget _sectionTitle(String text, dynamic c) => Text(text,
+      style: TextStyle(
+          color: c.textSecondary, fontSize: 12, letterSpacing: 1.5));
+
   Widget _stat(String label, Decimal value, String pctText, Color color) {
     return Column(
       children: [
@@ -310,13 +286,15 @@ class _CategoryBreakdown extends StatelessWidget {
   final Map<int, Decimal> byCategory;
   final Map<int, Category> categories;
   final String Function(Decimal, Decimal) pct;
-  final Decimal gastos;
+  final Decimal total;
+  final Color color;
 
   const _CategoryBreakdown({
     required this.byCategory,
     required this.categories,
     required this.pct,
-    required this.gastos,
+    required this.total,
+    required this.color,
   });
 
   @override
@@ -325,12 +303,11 @@ class _CategoryBreakdown extends StatelessWidget {
       return const Card(
           child: Padding(
               padding: EdgeInsets.all(20),
-              child: Center(child: Text('Sin gastos en el periodo'))));
+              child: Center(child: Text('Sin datos en el periodo'))));
     }
     final entries = byCategory.entries.toList()
       ..sort((a, b) => b.value.compareTo(a.value));
     final max = entries.first.value;
-    final c = context.app.colors;
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(14),
@@ -350,7 +327,7 @@ class _CategoryBreakdown extends StatelessWidget {
                               style: const TextStyle(fontSize: 13)),
                         ),
                         Text(
-                            '${MoneyFormat.format(e.value)}  ·  ${pct(e.value, gastos)}',
+                            '${MoneyFormat.format(e.value)}  ·  ${pct(e.value, total)}',
                             style: const TextStyle(
                                 fontSize: 12, fontWeight: FontWeight.w600)),
                       ],
@@ -362,7 +339,7 @@ class _CategoryBreakdown extends StatelessWidget {
                       borderRadius: AppRadii.standard.brXs,
                       backgroundColor:
                           Theme.of(context).colorScheme.surfaceContainerHighest,
-                      color: c.expense,
+                      color: color,
                     ),
                   ],
                 ),

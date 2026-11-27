@@ -8,6 +8,7 @@ import '../../core/utils/decimal_utils.dart';
 import '../../core/utils/money_format.dart';
 import '../../data/models/savings_contribution.dart';
 import '../../data/models/savings_goal.dart';
+import '../../data/models/transaction.dart';
 import '../../data/providers.dart';
 import '../../shared/ui/empty_state.dart';
 import '../../shared/ui/error_state.dart';
@@ -203,6 +204,67 @@ class GoalsScreen extends ConsumerWidget {
     );
   }
 
+  Future<void> _use(BuildContext context, WidgetRef ref, SavingsGoal g) async {
+    final catRepo = await ref.read(categoryRepoProvider.future);
+    final leaves = await catRepo.getLeaves(TransactionType.expense);
+    if (!context.mounted) return;
+    final amountCtrl = TextEditingController();
+    int? catId;
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setSt) => AlertDialog(
+          title: Text('Usar ahorro de ${g.name}'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                  controller: amountCtrl,
+                  keyboardType: TextInputType.number,
+                  decoration:
+                      const InputDecoration(labelText: 'Monto a usar')),
+              const SizedBox(height: 8),
+              DropdownButton<int?>(
+                isExpanded: true,
+                value: catId,
+                hint: const Text('Categoría del gasto'),
+                items: [
+                  for (final cat in leaves)
+                    DropdownMenuItem(value: cat.id, child: Text(cat.name)),
+                ],
+                onChanged: (v) => setSt(() => catId = v),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+                onPressed: () => Navigator.pop(ctx, false),
+                child: const Text('Cancelar')),
+            FilledButton(
+                onPressed: () => Navigator.pop(ctx, true),
+                child: const Text('Registrar gasto')),
+          ],
+        ),
+      ),
+    );
+    if (ok != true || catId == null) return;
+    final amount = DecimalUtils.tryParse(amountCtrl.text);
+    if (amount == null || amount <= Decimal.zero) return;
+    final txnRepo = await ref.read(transactionRepoProvider.future);
+    await txnRepo.insert(Transaction(
+      date: DateTime.now(),
+      amountBps: DecimalUtils.toBps(amount),
+      type: TransactionType.expense,
+      categoryId: catId!,
+      description: 'Uso de meta ${g.name}',
+    ));
+    final repo = await ref.read(savingsGoalRepoProvider.future);
+    g.savedBps -= DecimalUtils.toBps(amount);
+    if (g.savedBps < 0) g.savedBps = 0;
+    await repo.update(g);
+    ref.invalidate(savingsGoalsProvider);
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final async = ref.watch(savingsGoalsProvider);
@@ -253,6 +315,7 @@ class GoalsScreen extends ConsumerWidget {
                 onShowContributions: () => _showContributions(context, ref, g),
                 onEdit: () => _edit(context, ref, g),
                 onDelete: () => _delete(context, ref, g),
+                onUse: () => _use(context, ref, g),
               );
             },
           );
@@ -268,6 +331,7 @@ class _GoalCard extends StatelessWidget {
   final VoidCallback onShowContributions;
   final VoidCallback onEdit;
   final VoidCallback onDelete;
+  final VoidCallback onUse;
 
   const _GoalCard({
     required this.goal,
@@ -275,6 +339,7 @@ class _GoalCard extends StatelessWidget {
     required this.onShowContributions,
     required this.onEdit,
     required this.onDelete,
+    required this.onUse,
   });
 
   @override
@@ -307,10 +372,12 @@ class _GoalCard extends StatelessWidget {
                         color: c.textSecondary, fontWeight: FontWeight.bold)),
                 PopupMenuButton<String>(
                   onSelected: (v) {
+                    if (v == 'usar') onUse();
                     if (v == 'edit') onEdit();
                     if (v == 'delete') onDelete();
                   },
                   itemBuilder: (_) => const [
+                    PopupMenuItem(value: 'usar', child: Text('Usar ahorro')),
                     PopupMenuItem(value: 'edit', child: Text('Editar')),
                     PopupMenuItem(value: 'delete', child: Text('Eliminar')),
                   ],

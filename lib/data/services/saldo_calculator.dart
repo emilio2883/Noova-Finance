@@ -73,6 +73,21 @@ class SaldoCalculator {
     return monthEnds.map((end) => saldo(transactions, end)).toList();
   }
 
+  /// Total income per categoryId in a period.
+  static Map<int, Decimal> ingresosPorCategoria(
+    List<Transaction> transactions,
+    DateTime start,
+    DateTime end,
+  ) {
+    final result = <int, Decimal>{};
+    for (final t in transactions) {
+      if (t.type != TransactionType.income) continue;
+      if (t.date.isBefore(start) || t.date.isAfter(end)) continue;
+      result[t.categoryId] = (result[t.categoryId] ?? Decimal.zero) + t.amount;
+    }
+    return result;
+  }
+
   /// Total spent per categoryId in a period.
   /// Key = categoryId, value = total expense amount (positive).
   static Map<int, Decimal> gastosPorCategoria(

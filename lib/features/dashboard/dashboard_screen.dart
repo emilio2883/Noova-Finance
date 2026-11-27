@@ -45,10 +45,10 @@ class DashboardScreen extends ConsumerWidget {
         loading: () => const LoadingState(),
         error: (e, _) => ErrorState(message: 'No pudimos cargar tu dashboard.', onRetry: () => ref.invalidate(dashboardProvider)),
         data: (d) {
-          final spends = d.categorySpending
-              .where((s) => s.total > Decimal.zero)
-              .toList();
-          final maxTotal = spends.isEmpty ? 0.0 : spends.first.total.toDouble();
+          final spends = d.categorySpending; // all defined categories
+          final maxTotal = spends.isEmpty || spends.first.total == Decimal.zero
+              ? 0.0
+              : spends.first.total.toDouble();
 
           return RefreshIndicator(
             onRefresh: () async => ref.invalidate(dashboardProvider),
@@ -59,8 +59,11 @@ class DashboardScreen extends ConsumerWidget {
                 UtilidadCard(
                   ingresos: MoneyFormat.compact(d.ingresosAnio),
                   gastos: MoneyFormat.compact(d.gastosAnio),
-                  utilidad: MoneyFormat.compact(d.utilidadAnio),
-                  utilidadPositiva: d.utilidadAnio >= Decimal.zero,
+                  utilidad: MoneyFormat.compact(d.utilidadTotalAnio),
+                  utilidadPositiva: d.utilidadTotalAnio >= Decimal.zero,
+                  ahorro: d.ahorroMetasAnio > Decimal.zero
+                      ? MoneyFormat.compact(d.ahorroMetasAnio)
+                      : null,
                 ),
                 _InsightsSection(insights: buildInsights(d)),
                 if (d.globalBudget > Decimal.zero) _GlobalBudgetCard(data: d),
@@ -273,6 +276,19 @@ class _GoalsSummary extends ConsumerWidget {
         final pct = totalTarget <= 0
             ? 0.0
             : (totalSaved / totalTarget).clamp(0.0, 1.0).toDouble();
+        final msgs = <String>[];
+        for (final g in goals) {
+          final gp = g.targetBps <= 0 ? 0.0 : (g.savedBps / g.targetBps * 100);
+          if (gp >= 100) {
+            msgs.add(g.savedBps > g.targetBps
+                ? '${g.name}: meta superada (${gp.round()}%)'
+                : '${g.name}: meta alcanzada (100%)');
+          } else if (gp >= 75) {
+            msgs.add('${g.name}: ${gp.round()}% (¡casi!)');
+          } else if (gp >= 50) {
+            msgs.add('${g.name}: ${gp.round()}%');
+          }
+        }
         return Card(
           child: Padding(
             padding: const EdgeInsets.all(16),
@@ -314,6 +330,20 @@ class _GoalsSummary extends ConsumerWidget {
                       Theme.of(context).colorScheme.surfaceContainerHighest,
                   color: c.income,
                 ),
+                if (msgs.isNotEmpty) const SizedBox(height: 8),
+                for (final m in msgs)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 2),
+                    child: Row(children: [
+                      Icon(Icons.emoji_events_outlined, size: 15, color: c.primary),
+                      const SizedBox(width: 6),
+                      Expanded(
+                        child: Text(m,
+                            style:
+                                TextStyle(fontSize: 11, color: c.textSecondary)),
+                      ),
+                    ]),
+                  ),
               ],
             ),
           ),

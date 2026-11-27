@@ -103,4 +103,25 @@ class SaldoCalculator {
     }
     return result;
   }
+
+  /// Difference between a current and a previous total (current - previous).
+  static Decimal deltaPeriodo(Decimal actual, Decimal anterior) =>
+      actual - anterior;
+
+  /// Percentage change of [actual] vs [anterior]. 0 when anteriores el cero.
+  static double pctCambio(Decimal actual, Decimal anterior) {
+    if (anterior == Decimal.zero) {
+      return actual == Decimal.zero ? 0 : 100;
+    }
+    return (actual.toDouble() - anterior.toDouble()) /
+        anterior.toDouble() *
+        100;
+  }
+
+  /// Average amount per day across the inclusive range [start, end].
+  static Decimal promedioDiario(Decimal total, DateTime start, DateTime end) {
+    final days = end.difference(start).inDays + 1;
+    if (days <= 0) return Decimal.zero;
+    return Decimal.parse((total.toDouble() / days).toStringAsFixed(2));
+  }
 }

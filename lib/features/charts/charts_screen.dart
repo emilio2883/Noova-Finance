@@ -18,6 +18,7 @@ import '../../shared/ui/empty_state.dart';
 import '../../shared/ui/error_state.dart';
 import '../../shared/ui/loading_state.dart';
 import '../../shared/widgets/period_selector.dart';
+import 'comparatives.dart';
 
 class _Data {
   final List<Transaction> txns;
@@ -112,6 +113,8 @@ class _ChartsScreenState extends ConsumerState<ChartsScreen> {
               _SaldoLineCard(data: data, anchor: _anchor),
               SizedBox(height: context.app.spacing.md),
               _BarsCard(data: data, anchor: _anchor),
+              SizedBox(height: context.app.spacing.md),
+              _ComparativesCard(data: data, view: _view, anchor: _anchor),
               SizedBox(height: context.app.spacing.lg),
             ],
           );
@@ -516,4 +519,139 @@ class _BarsCard extends StatelessWidget {
           Text(label, style: const TextStyle(fontSize: 12)),
         ],
       );
+}
+
+
+// ── Comparativos y promedios ───────────────────────────────────────────────
+class _ComparativesCard extends StatelessWidget {
+  final _Data data;
+  final PeriodView view;
+  final DateTime anchor;
+
+  const _ComparativesCard({
+    required this.data,
+    required this.view,
+    required this.anchor,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final app = context.app;
+    final r = buildComparatives(data.txns, data.categories, view, anchor);
+
+    Widget deltaRow(StatDelta s, {required bool inverse}) {
+      final up = s.up;
+      final good = inverse ? !up : up;
+      final color = s.delta == Decimal.zero
+          ? app.colors.textSecondary
+          : (good ? app.colors.income : app.colors.expense);
+      final icon = s.delta == Decimal.zero
+          ? Icons.remove
+          : (up ? Icons.arrow_upward : Icons.arrow_downward);
+      return Padding(
+        padding: EdgeInsets.symmetric(vertical: app.spacing.xs),
+        child: Row(
+          children: [
+            Expanded(child: Text(s.label, style: const TextStyle(fontSize: 13))),
+            Text(MoneyFormat.format(s.current),
+                style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
+            SizedBox(width: app.spacing.sm),
+            Icon(icon, size: 16, color: color),
+            Text('${s.pct.abs().toStringAsFixed(0)}%',
+                style: TextStyle(
+                    fontSize: 12, color: color, fontWeight: FontWeight.w700)),
+          ],
+        ),
+      );
+    }
+
+    Widget promedio(String label, Decimal v) => Padding(
+          padding: EdgeInsets.symmetric(vertical: app.spacing.xxs),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(label, style: const TextStyle(fontSize: 12)),
+              Text(MoneyFormat.format(v),
+                  style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
+            ],
+          ),
+        );
+
+    final body = Column(
+      children: [
+        deltaRow(r.gasto, inverse: true),
+        deltaRow(r.ingreso, inverse: false),
+        deltaRow(r.utilidad, inverse: false),
+        Divider(height: app.spacing.lg, color: app.colors.divider),
+        promedio('Gasto promedio diario', r.gastoDiarioPromedio),
+        promedio('Gasto promedio por mes (3m)', r.gastoMesPromedio),
+        promedio('Gasto promedio por quincena (3m)', r.gastoQuincenaPromedio),
+        promedio('Ingreso promedio por mes (3m)', r.ingresoMesPromedio),
+        Padding(
+          padding: EdgeInsets.only(top: app.spacing.sm),
+          child: Row(
+            children: [
+              Icon(
+                r.tendenciaGastoPct >= 0
+                    ? Icons.trending_up
+                    : Icons.trending_down,
+                size: 16,
+                color: r.tendenciaGastoPct >= 0
+                    ? app.colors.expense
+                    : app.colors.income,
+              ),
+              SizedBox(width: app.spacing.xs),
+              Expanded(
+                child: Text(
+                  'Tendencia del gasto vs promedio 3 meses: '
+                  '${r.tendenciaGastoPct.abs().toStringAsFixed(0)}%',
+                  style: const TextStyle(fontSize: 12),
+                ),
+              ),
+            ],
+          ),
+        ),
+        if (r.topSubidaNombre != null)
+          Padding(
+            padding: EdgeInsets.only(top: app.spacing.xs),
+            child: Row(
+              children: [
+                Icon(Icons.arrow_upward, size: 14, color: app.colors.expense),
+                SizedBox(width: app.spacing.xs),
+                Expanded(
+                  child: Text(
+                    'Subió más: ${r.topSubidaNombre} '
+                    '(+${MoneyFormat.format(r.topSubidaMonto)})',
+                    style: TextStyle(fontSize: 12, color: app.colors.expense),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        if (r.topBajadaNombre != null)
+          Padding(
+            padding: EdgeInsets.only(top: app.spacing.xxs),
+            child: Row(
+              children: [
+                Icon(Icons.arrow_downward, size: 14, color: app.colors.income),
+                SizedBox(width: app.spacing.xs),
+                Expanded(
+                  child: Text(
+                    'Bajó más: ${r.topBajadaNombre} '
+                    '(-${MoneyFormat.format(r.topBajadaMonto)})',
+                    style: TextStyle(fontSize: 12, color: app.colors.income),
+                  ),
+                ),
+              ],
+            ),
+          ),
+      ],
+    );
+
+    return _ChartCard(
+      title: 'Comparativos',
+      subtitle: '${view.label(anchor)} vs periodo anterior',
+      body: body,
+    );
+  }
 }

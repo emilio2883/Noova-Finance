@@ -75,6 +75,13 @@ class SettingsScreen extends ConsumerWidget {
             subtitle: 'Movimientos automáticos y próximos pagos',
             onTap: () => context.push('/recurring'),
           ),
+          _item(
+            context,
+            icon: Icons.subscriptions_outlined,
+            title: 'Suscripciones',
+            subtitle: 'Total mensual/anual y recordatorios de cobro',
+            onTap: () => context.push('/subscriptions'),
+          ),
           _section(context, 'APARIENCIA'),
           Card(
             margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),

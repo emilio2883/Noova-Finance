@@ -87,4 +87,34 @@ class NotificationService {
   static Future<void> cancelReminders() async {
     await _plugin.cancel(1000);
   }
+
+  /// Schedule a single bill/subscription reminder at [when] (unique [id]).
+  static Future<void> scheduleBillReminder({
+    required int id,
+    required DateTime when,
+    required String title,
+    required String body,
+  }) async {
+    if (!_initialized) await init();
+    if (!when.isAfter(DateTime.now())) return;
+    const androidDetails = AndroidNotificationDetails(
+      'noova_bills',
+      'Recordatorios de pago',
+      channelDescription: 'Avisos de cobros y suscripciones',
+      importance: Importance.high,
+      priority: Priority.high,
+    );
+    const iosDetails = DarwinNotificationDetails();
+    const details = NotificationDetails(android: androidDetails, iOS: iosDetails);
+    await _plugin.zonedSchedule(
+      id,
+      title,
+      body,
+      tz.TZDateTime.from(when, tz.local),
+      details,
+      androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
+      uiLocalNotificationDateInterpretation:
+          UILocalNotificationDateInterpretation.absoluteTime,
+    );
+  }
 }

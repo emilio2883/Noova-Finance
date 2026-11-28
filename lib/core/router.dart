@@ -12,6 +12,7 @@ import '../features/charts/charts_screen.dart';
 import '../features/import/import_screen.dart';
 import '../features/search/search_screen.dart';
 import '../features/recurring/recurring_screen.dart';
+import '../features/subscriptions/subscriptions_screen.dart';
 import '../features/quincenal/quincenal_screen.dart';
 import '../features/settings/settings_screen.dart';
 
@@ -61,6 +62,10 @@ GoRouter buildRouter() {
       GoRoute(
         path: '/recurring',
         builder: (context, state) => const RecurringScreen(),
+      ),
+      GoRoute(
+        path: '/subscriptions',
+        builder: (context, state) => const SubscriptionsScreen(),
       ),
       GoRoute(
         path: '/budgets',

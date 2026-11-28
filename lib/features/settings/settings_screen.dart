@@ -4,11 +4,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:open_filex/open_filex.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 
 
 import '../../core/theme_provider.dart';
+import '../../core/utils/date_utils.dart';
 import '../../data/models/budget.dart';
 import '../../data/models/category.dart';
 import '../../data/models/recurring_rule.dart';
@@ -45,6 +47,34 @@ class SettingsScreen extends ConsumerWidget {
             title: 'Exportar a Excel',
             subtitle: 'Guardar .xlsx en el dispositivo y abrir con Excel',
             onTap: () => _export(context, ref),
+          ),
+          _item(
+            context,
+            icon: Icons.table_view,
+            title: 'Exportar CSV',
+            subtitle: 'Transacciones en .csv (abre en Excel)',
+            onTap: () => _exportCsv(context, ref),
+          ),
+          _item(
+            context,
+            icon: Icons.picture_as_pdf,
+            title: 'Exportar PDF (reporte)',
+            subtitle: 'Reporte resumido del mes por categoría',
+            onTap: () => _exportPdf(context, ref),
+          ),
+          _item(
+            context,
+            icon: Icons.backup_outlined,
+            title: 'Respaldar datos',
+            subtitle: 'Copia de seguridad local (.noova)',
+            onTap: () => _backup(context, ref),
+          ),
+          _item(
+            context,
+            icon: Icons.restore,
+            title: 'Restaurar datos',
+            subtitle: 'Recuperar desde un respaldo .noova',
+            onTap: () => _restore(context, ref),
           ),
           _item(
             context,
@@ -203,6 +233,83 @@ class SettingsScreen extends ConsumerWidget {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Datos borrados y categorías reiniciadas')),
       );
+    }
+  }
+
+
+  void _snack(ScaffoldMessengerState messenger, String msg) {
+    messenger.showSnackBar(SnackBar(content: Text(msg)));
+  }
+
+  Future<void> _exportCsv(BuildContext context, WidgetRef ref) async {
+    final messenger = ScaffoldMessenger.of(context);
+    try {
+      final exp = await ref.read(csvExporterProvider.future);
+      final f = await exp.saveAndShare();
+      _snack(messenger, 'CSV generado: ${f.path.split(Platform.pathSeparator).last}');
+    } catch (e) {
+      _snack(messenger, 'Error al exportar CSV: $e');
+    }
+  }
+
+  Future<void> _exportPdf(BuildContext context, WidgetRef ref) async {
+    final messenger = ScaffoldMessenger.of(context);
+    try {
+      final now = DateTime.now();
+      final exp = await ref.read(pdfExporterProvider.future);
+      final f = await exp.exportAndShare(
+        start: QuincenaUtils.monthStart(now),
+        end: QuincenaUtils.monthEnd(now),
+      );
+      _snack(messenger, 'PDF generado: ${f.path.split(Platform.pathSeparator).last}');
+    } catch (e) {
+      _snack(messenger, 'Error al exportar PDF: $e');
+    }
+  }
+
+  Future<void> _backup(BuildContext context, WidgetRef ref) async {
+    final messenger = ScaffoldMessenger.of(context);
+    try {
+      final svc = await ref.read(backupServiceProvider.future);
+      final f = await svc.exportAndShare();
+      _snack(messenger, 'Respaldo creado: ${f.path.split(Platform.pathSeparator).last}');
+    } catch (e) {
+      _snack(messenger, 'Error al respaldar: $e');
+    }
+  }
+
+  Future<void> _restore(BuildContext context, WidgetRef ref) async {
+    final messenger = ScaffoldMessenger.of(context);
+    try {
+      final picked = await FilePicker.platform.pickFiles(
+        type: FileType.custom,
+        allowedExtensions: ['noova', 'json'],
+        withData: false,
+      );
+      if (picked == null || picked.files.single.path == null) return;
+      final path = picked.files.single.path!;
+      if (!context.mounted) return;
+      final ok = await showDialog<bool>(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          title: const Text('Restaurar datos'),
+          content: const Text(
+              'Esto reemplazará TODOS los datos actuales con el contenido del respaldo. ¿Continuar?'),
+          actions: [
+            TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancelar')),
+            FilledButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('Restaurar')),
+          ],
+        ),
+      );
+      if (ok != true) return;
+      final svc = await ref.read(backupServiceProvider.future);
+      await svc.restoreFile(File(path));
+      ref.invalidate(categoryRepoProvider);
+      ref.invalidate(transactionRepoProvider);
+      ref.invalidate(dashboardProvider);
+      _snack(messenger, 'Datos restaurados');
+    } catch (e) {
+      _snack(messenger, 'Error al restaurar: $e');
     }
   }
 

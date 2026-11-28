@@ -9,8 +9,11 @@ import 'repositories/savings_goal_repo.dart';
 import 'repositories/settings_repo.dart';
 import 'repositories/transaction_repo.dart';
 import 'services/budget_checker.dart';
+import 'services/backup_service.dart';
+import 'services/csv_exporter.dart';
 import 'services/excel_exporter.dart';
 import 'services/excel_importer.dart';
+import 'services/pdf_exporter.dart';
 import 'services/recurring_generator.dart';
 import 'services/saldo_calculator.dart';
 
@@ -79,4 +82,21 @@ final excelExporterProvider = FutureProvider<ExcelExporter>((ref) async {
   final transactionRepo = await ref.watch(transactionRepoProvider.future);
   final categoryRepo = await ref.watch(categoryRepoProvider.future);
   return ExcelExporter(transactionRepo, categoryRepo);
+});
+
+final csvExporterProvider = FutureProvider<CsvExporter>((ref) async {
+  final txn = await ref.watch(transactionRepoProvider.future);
+  final cat = await ref.watch(categoryRepoProvider.future);
+  return CsvExporter(txn, cat);
+});
+
+final pdfExporterProvider = FutureProvider<PdfExporter>((ref) async {
+  final txn = await ref.watch(transactionRepoProvider.future);
+  final cat = await ref.watch(categoryRepoProvider.future);
+  return PdfExporter(txn, cat);
+});
+
+final backupServiceProvider = FutureProvider<BackupService>((ref) async {
+  final isar = await ref.watch(isarProvider.future);
+  return BackupService(isar);
 });

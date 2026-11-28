@@ -1,6 +1,6 @@
 # Noova Finance — Fase 1 (003-phase1) · Plan de arquitectura
 
-Documento vivo. Se actualiza al cerrar cada feature. Estado: en progreso.
+Documento vivo. Todas las features 1–7 implementadas; gates por feature verificados.
 
 ## Principios
 - Offline-first, 100% local. Sin red ni analytics. Riverpod 2.6 (no v3). Isar 3.
@@ -30,11 +30,32 @@ Documento vivo. Se actualiza al cerrar cada feature. Estado: en progreso.
 - `lib/features/charts/comparatives.dart`: deltas vs periodo anterior,
   promedios (diario / mes / quincena, 3m), tendencia de gasto, top movers.
 - Sección "Comparativos" en Análisis. Tests: `comparatives_test.dart` (3).
-### 3) Búsqueda y filtros avanzados  ⏳
-### 4) UI de recurrentes + calendario de pagos  ⏳
-### 5) Gestor de suscripciones  ⏳
-### 6) Export CSV/PDF + respaldo/restauración  ⏳
-### 7) Onboarding guiado  ⏳
+### 3) Búsqueda y filtros avanzados  ✅
+- `SearchFilters` + `TransactionRepository.search` (Isar por fecha; Dart por
+  tipo/categoría/monto/recurrente/texto).
+- `features/search/`: `SearchFiltersNotifier` (debounce) + pantalla con texto,
+  tipo, multi-categoría, rango de fechas, importe, solo recurrentes; cabecera
+  con conteo y totales; tap -> detalle. Ruta /search (Inicio, Consumo, Ajustes).
+### 4) Recurrentes + calendario  ✅
+- `RecurringRule` amplía label/isSubscription/reminderDaysBefore (+ Isar).
+- `features/recurring/`: editor (categoría, monto, tipo, frecuencia, día,
+  fechas, activa, etiqueta) + pantalla con toggle, editar, borrar y "Próximos
+  pagos" 90 días. Ruta /recurring. Tras cambios: generateDue + dashboard.
+### 5) Gestor de suscripciones  ✅
+- `subscriptions_logic.dart`: total mensual/anual (quincenal x2), pausadas
+  excluidas (tested). Pantalla con total, proyección y alta/edición vía
+  `RecurringEditorSheet(isSubscription)`, pausar/reanudar, borrar.
+- `NotificationService.scheduleBillReminder` (id 2000+ruleId); reprogramación
+  en arranque (`main.dart`). Ruta /subscriptions.
+### 6) Export CSV/PDF + backup/restore  ✅
+- `csv_exporter.dart` (buildCsv puro, tested), `pdf_exporter.dart` (pdf+printing),
+  `backup_service.dart` (snapshot JSON versionado + restore con ids, tested).
+- Ajustes: Exportar CSV, Exportar PDF, Respaldar, Restaurar (file_picker +
+  confirmación + invalidación de providers).
+### 7) Onboarding guiado  ✅
+- `AppSettings.onboardingDone` (+ Isar); `core/app_flags.dart` para el redirect
+  síncrono; `features/onboarding/onboarding_screen.dart` (3 pasos). Ruta
+  /onboarding; usuarios existentes (con datos) se marcan done en el arranque.
 
 ## Gates por feature
 `flutter analyze` (0) · `dart run tool/check_raw_values.dart` (exit 0) ·

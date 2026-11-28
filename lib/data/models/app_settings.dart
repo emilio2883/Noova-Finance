@@ -35,6 +35,9 @@ class AppSettings {
   /// Has historical Excel data been imported
   bool isImported;
 
+  /// True once the first-run onboarding has been completed/skipped.
+  bool onboardingDone;
+
   DateTime? lastExportDate;
 
   AppSettings({
@@ -48,6 +51,7 @@ class AppSettings {
     this.themeChoiceMade = false,
     this.userName,
     this.isImported = false,
+    this.onboardingDone = false,
     this.lastExportDate,
   });
 }

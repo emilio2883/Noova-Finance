@@ -37,38 +37,43 @@ const AppSettingsSchema = CollectionSchema(
       name: r'lastExportDate',
       type: IsarType.dateTime,
     ),
-    r'pinHash': PropertySchema(
+    r'onboardingDone': PropertySchema(
       id: 4,
+      name: r'onboardingDone',
+      type: IsarType.bool,
+    ),
+    r'pinHash': PropertySchema(
+      id: 5,
       name: r'pinHash',
       type: IsarType.string,
     ),
     r'reminderEnabled': PropertySchema(
-      id: 5,
+      id: 6,
       name: r'reminderEnabled',
       type: IsarType.bool,
     ),
     r'reminderHour': PropertySchema(
-      id: 6,
+      id: 7,
       name: r'reminderHour',
       type: IsarType.long,
     ),
     r'reminderMinute': PropertySchema(
-      id: 7,
+      id: 8,
       name: r'reminderMinute',
       type: IsarType.long,
     ),
     r'themeChoiceMade': PropertySchema(
-      id: 8,
+      id: 9,
       name: r'themeChoiceMade',
       type: IsarType.bool,
     ),
     r'themeMode': PropertySchema(
-      id: 9,
+      id: 10,
       name: r'themeMode',
       type: IsarType.string,
     ),
     r'userName': PropertySchema(
-      id: 10,
+      id: 11,
       name: r'userName',
       type: IsarType.string,
     )
@@ -120,13 +125,14 @@ void _appSettingsSerialize(
   writer.writeString(offsets[1], object.defaultCurrency);
   writer.writeBool(offsets[2], object.isImported);
   writer.writeDateTime(offsets[3], object.lastExportDate);
-  writer.writeString(offsets[4], object.pinHash);
-  writer.writeBool(offsets[5], object.reminderEnabled);
-  writer.writeLong(offsets[6], object.reminderHour);
-  writer.writeLong(offsets[7], object.reminderMinute);
-  writer.writeBool(offsets[8], object.themeChoiceMade);
-  writer.writeString(offsets[9], object.themeMode);
-  writer.writeString(offsets[10], object.userName);
+  writer.writeBool(offsets[4], object.onboardingDone);
+  writer.writeString(offsets[5], object.pinHash);
+  writer.writeBool(offsets[6], object.reminderEnabled);
+  writer.writeLong(offsets[7], object.reminderHour);
+  writer.writeLong(offsets[8], object.reminderMinute);
+  writer.writeBool(offsets[9], object.themeChoiceMade);
+  writer.writeString(offsets[10], object.themeMode);
+  writer.writeString(offsets[11], object.userName);
 }
 
 AppSettings _appSettingsDeserialize(
@@ -140,13 +146,14 @@ AppSettings _appSettingsDeserialize(
     defaultCurrency: reader.readStringOrNull(offsets[1]) ?? 'USD',
     isImported: reader.readBoolOrNull(offsets[2]) ?? false,
     lastExportDate: reader.readDateTimeOrNull(offsets[3]),
-    pinHash: reader.readStringOrNull(offsets[4]),
-    reminderEnabled: reader.readBoolOrNull(offsets[5]) ?? false,
-    reminderHour: reader.readLongOrNull(offsets[6]) ?? 20,
-    reminderMinute: reader.readLongOrNull(offsets[7]) ?? 0,
-    themeChoiceMade: reader.readBoolOrNull(offsets[8]) ?? false,
-    themeMode: reader.readStringOrNull(offsets[9]) ?? 'light',
-    userName: reader.readStringOrNull(offsets[10]),
+    onboardingDone: reader.readBoolOrNull(offsets[4]) ?? false,
+    pinHash: reader.readStringOrNull(offsets[5]),
+    reminderEnabled: reader.readBoolOrNull(offsets[6]) ?? false,
+    reminderHour: reader.readLongOrNull(offsets[7]) ?? 20,
+    reminderMinute: reader.readLongOrNull(offsets[8]) ?? 0,
+    themeChoiceMade: reader.readBoolOrNull(offsets[9]) ?? false,
+    themeMode: reader.readStringOrNull(offsets[10]) ?? 'light',
+    userName: reader.readStringOrNull(offsets[11]),
   );
   object.id = id;
   return object;
@@ -168,18 +175,20 @@ P _appSettingsDeserializeProp<P>(
     case 3:
       return (reader.readDateTimeOrNull(offset)) as P;
     case 4:
-      return (reader.readStringOrNull(offset)) as P;
+      return (reader.readBoolOrNull(offset) ?? false) as P;
     case 5:
-      return (reader.readBoolOrNull(offset) ?? false) as P;
+      return (reader.readStringOrNull(offset)) as P;
     case 6:
-      return (reader.readLongOrNull(offset) ?? 20) as P;
-    case 7:
-      return (reader.readLongOrNull(offset) ?? 0) as P;
-    case 8:
       return (reader.readBoolOrNull(offset) ?? false) as P;
+    case 7:
+      return (reader.readLongOrNull(offset) ?? 20) as P;
+    case 8:
+      return (reader.readLongOrNull(offset) ?? 0) as P;
     case 9:
-      return (reader.readStringOrNull(offset) ?? 'light') as P;
+      return (reader.readBoolOrNull(offset) ?? false) as P;
     case 10:
+      return (reader.readStringOrNull(offset) ?? 'light') as P;
+    case 11:
       return (reader.readStringOrNull(offset)) as P;
     default:
       throw IsarError('Unknown property with id $propertyId');
@@ -558,6 +567,16 @@ extension AppSettingsQueryFilter
         includeLower: includeLower,
         upper: upper,
         includeUpper: includeUpper,
+      ));
+    });
+  }
+
+  QueryBuilder<AppSettings, AppSettings, QAfterFilterCondition>
+      onboardingDoneEqualTo(bool value) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'onboardingDone',
+        value: value,
       ));
     });
   }
@@ -1196,6 +1215,19 @@ extension AppSettingsQuerySortBy
     });
   }
 
+  QueryBuilder<AppSettings, AppSettings, QAfterSortBy> sortByOnboardingDone() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'onboardingDone', Sort.asc);
+    });
+  }
+
+  QueryBuilder<AppSettings, AppSettings, QAfterSortBy>
+      sortByOnboardingDoneDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'onboardingDone', Sort.desc);
+    });
+  }
+
   QueryBuilder<AppSettings, AppSettings, QAfterSortBy> sortByPinHash() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'pinHash', Sort.asc);
@@ -1351,6 +1383,19 @@ extension AppSettingsQuerySortThenBy
     });
   }
 
+  QueryBuilder<AppSettings, AppSettings, QAfterSortBy> thenByOnboardingDone() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'onboardingDone', Sort.asc);
+    });
+  }
+
+  QueryBuilder<AppSettings, AppSettings, QAfterSortBy>
+      thenByOnboardingDoneDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'onboardingDone', Sort.desc);
+    });
+  }
+
   QueryBuilder<AppSettings, AppSettings, QAfterSortBy> thenByPinHash() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'pinHash', Sort.asc);
@@ -1469,6 +1514,12 @@ extension AppSettingsQueryWhereDistinct
     });
   }
 
+  QueryBuilder<AppSettings, AppSettings, QDistinct> distinctByOnboardingDone() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'onboardingDone');
+    });
+  }
+
   QueryBuilder<AppSettings, AppSettings, QDistinct> distinctByPinHash(
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
@@ -1548,6 +1599,12 @@ extension AppSettingsQueryProperty
       lastExportDateProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'lastExportDate');
+    });
+  }
+
+  QueryBuilder<AppSettings, bool, QQueryOperations> onboardingDoneProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'onboardingDone');
     });
   }
 

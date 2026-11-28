@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../data/providers.dart';
+import 'app_flags.dart';
 import '../features/auth/lock_screen.dart';
 import '../features/budgets/budgets_screen.dart';
 import '../features/categories/categories_screen.dart';
@@ -10,6 +11,7 @@ import '../features/dashboard/dashboard_screen.dart';
 import '../features/goals/goals_screen.dart';
 import '../features/charts/charts_screen.dart';
 import '../features/import/import_screen.dart';
+import '../features/onboarding/onboarding_screen.dart';
 import '../features/search/search_screen.dart';
 import '../features/recurring/recurring_screen.dart';
 import '../features/subscriptions/subscriptions_screen.dart';
@@ -36,12 +38,22 @@ GoRouter buildRouter() {
       if (UnlockState.instance.pinRequired && !UnlockState.instance.unlocked) {
         return '/lock';
       }
+      if (!AppFlags.onboardingDone && loc != '/onboarding') {
+        return '/onboarding';
+      }
+      if (AppFlags.onboardingDone && loc == '/onboarding') {
+        return '/dashboard';
+      }
       return null;
     },
     routes: [
       GoRoute(
         path: '/lock',
         builder: (context, state) => const LockGate(),
+      ),
+      GoRoute(
+        path: '/onboarding',
+        builder: (context, state) => const OnboardingScreen(),
       ),
       GoRoute(
         path: '/dashboard',

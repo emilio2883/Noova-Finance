@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'app.dart';
+import 'core/app_flags.dart';
 import 'core/router.dart';
 import 'core/services/notification_service.dart';
 import 'data/database.dart';
@@ -26,9 +27,16 @@ Future<void> main() async {
   await generator.generateDue();
   await SavingsGoalRepository(isar).generateRecurring();
 
-  final settings = await SettingsRepository(isar).get();
+  final settingsRepo = SettingsRepository(isar);
+  final settings = await settingsRepo.get();
   UnlockState.instance.pinRequired =
       settings.pinHash?.isNotEmpty ?? false;
+  // Existing users with data should not be forced through onboarding.
+  if (!settings.onboardingDone && await isar.transactions.count() > 0) {
+    settings.onboardingDone = true;
+    await settingsRepo.update(settings);
+  }
+  AppFlags.onboardingDone = settings.onboardingDone;
 
   await NotificationService.init();
 

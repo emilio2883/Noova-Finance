@@ -48,18 +48,33 @@ const RecurringRuleSchema = CollectionSchema(
       name: r'isActive',
       type: IsarType.bool,
     ),
-    r'lastGenerated': PropertySchema(
+    r'isSubscription': PropertySchema(
       id: 6,
+      name: r'isSubscription',
+      type: IsarType.bool,
+    ),
+    r'label': PropertySchema(
+      id: 7,
+      name: r'label',
+      type: IsarType.string,
+    ),
+    r'lastGenerated': PropertySchema(
+      id: 8,
       name: r'lastGenerated',
       type: IsarType.dateTime,
     ),
+    r'reminderDaysBefore': PropertySchema(
+      id: 9,
+      name: r'reminderDaysBefore',
+      type: IsarType.long,
+    ),
     r'startDate': PropertySchema(
-      id: 7,
+      id: 10,
       name: r'startDate',
       type: IsarType.dateTime,
     ),
     r'type': PropertySchema(
-      id: 8,
+      id: 11,
       name: r'type',
       type: IsarType.string,
       enumMap: _RecurringRuletypeEnumValueMap,
@@ -86,6 +101,12 @@ int _recurringRuleEstimateSize(
 ) {
   var bytesCount = offsets.last;
   bytesCount += 3 + object.frequency.name.length * 3;
+  {
+    final value = object.label;
+    if (value != null) {
+      bytesCount += 3 + value.length * 3;
+    }
+  }
   bytesCount += 3 + object.type.name.length * 3;
   return bytesCount;
 }
@@ -102,9 +123,12 @@ void _recurringRuleSerialize(
   writer.writeDateTime(offsets[3], object.endDate);
   writer.writeString(offsets[4], object.frequency.name);
   writer.writeBool(offsets[5], object.isActive);
-  writer.writeDateTime(offsets[6], object.lastGenerated);
-  writer.writeDateTime(offsets[7], object.startDate);
-  writer.writeString(offsets[8], object.type.name);
+  writer.writeBool(offsets[6], object.isSubscription);
+  writer.writeString(offsets[7], object.label);
+  writer.writeDateTime(offsets[8], object.lastGenerated);
+  writer.writeLong(offsets[9], object.reminderDaysBefore);
+  writer.writeDateTime(offsets[10], object.startDate);
+  writer.writeString(offsets[11], object.type.name);
 }
 
 RecurringRule _recurringRuleDeserialize(
@@ -122,10 +146,14 @@ RecurringRule _recurringRuleDeserialize(
             reader.readStringOrNull(offsets[4])] ??
         RecurringFrequency.quincenal,
     isActive: reader.readBoolOrNull(offsets[5]) ?? true,
-    lastGenerated: reader.readDateTimeOrNull(offsets[6]),
-    startDate: reader.readDateTime(offsets[7]),
-    type: _RecurringRuletypeValueEnumMap[reader.readStringOrNull(offsets[8])] ??
-        TransactionType.expense,
+    isSubscription: reader.readBoolOrNull(offsets[6]) ?? false,
+    label: reader.readStringOrNull(offsets[7]),
+    lastGenerated: reader.readDateTimeOrNull(offsets[8]),
+    reminderDaysBefore: reader.readLongOrNull(offsets[9]) ?? 0,
+    startDate: reader.readDateTime(offsets[10]),
+    type:
+        _RecurringRuletypeValueEnumMap[reader.readStringOrNull(offsets[11])] ??
+            TransactionType.expense,
   );
   object.id = id;
   return object;
@@ -153,10 +181,16 @@ P _recurringRuleDeserializeProp<P>(
     case 5:
       return (reader.readBoolOrNull(offset) ?? true) as P;
     case 6:
-      return (reader.readDateTimeOrNull(offset)) as P;
+      return (reader.readBoolOrNull(offset) ?? false) as P;
     case 7:
-      return (reader.readDateTime(offset)) as P;
+      return (reader.readStringOrNull(offset)) as P;
     case 8:
+      return (reader.readDateTimeOrNull(offset)) as P;
+    case 9:
+      return (reader.readLongOrNull(offset) ?? 0) as P;
+    case 10:
+      return (reader.readDateTime(offset)) as P;
+    case 11:
       return (_RecurringRuletypeValueEnumMap[reader.readStringOrNull(offset)] ??
           TransactionType.expense) as P;
     default:
@@ -720,6 +754,170 @@ extension RecurringRuleQueryFilter
   }
 
   QueryBuilder<RecurringRule, RecurringRule, QAfterFilterCondition>
+      isSubscriptionEqualTo(bool value) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'isSubscription',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<RecurringRule, RecurringRule, QAfterFilterCondition>
+      labelIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNull(
+        property: r'label',
+      ));
+    });
+  }
+
+  QueryBuilder<RecurringRule, RecurringRule, QAfterFilterCondition>
+      labelIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNotNull(
+        property: r'label',
+      ));
+    });
+  }
+
+  QueryBuilder<RecurringRule, RecurringRule, QAfterFilterCondition>
+      labelEqualTo(
+    String? value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'label',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<RecurringRule, RecurringRule, QAfterFilterCondition>
+      labelGreaterThan(
+    String? value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'label',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<RecurringRule, RecurringRule, QAfterFilterCondition>
+      labelLessThan(
+    String? value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'label',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<RecurringRule, RecurringRule, QAfterFilterCondition>
+      labelBetween(
+    String? lower,
+    String? upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'label',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<RecurringRule, RecurringRule, QAfterFilterCondition>
+      labelStartsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.startsWith(
+        property: r'label',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<RecurringRule, RecurringRule, QAfterFilterCondition>
+      labelEndsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.endsWith(
+        property: r'label',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<RecurringRule, RecurringRule, QAfterFilterCondition>
+      labelContains(String value, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.contains(
+        property: r'label',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<RecurringRule, RecurringRule, QAfterFilterCondition>
+      labelMatches(String pattern, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.matches(
+        property: r'label',
+        wildcard: pattern,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<RecurringRule, RecurringRule, QAfterFilterCondition>
+      labelIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'label',
+        value: '',
+      ));
+    });
+  }
+
+  QueryBuilder<RecurringRule, RecurringRule, QAfterFilterCondition>
+      labelIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        property: r'label',
+        value: '',
+      ));
+    });
+  }
+
+  QueryBuilder<RecurringRule, RecurringRule, QAfterFilterCondition>
       lastGeneratedIsNull() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(const FilterCondition.isNull(
@@ -785,6 +983,62 @@ extension RecurringRuleQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.between(
         property: r'lastGenerated',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+      ));
+    });
+  }
+
+  QueryBuilder<RecurringRule, RecurringRule, QAfterFilterCondition>
+      reminderDaysBeforeEqualTo(int value) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'reminderDaysBefore',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<RecurringRule, RecurringRule, QAfterFilterCondition>
+      reminderDaysBeforeGreaterThan(
+    int value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'reminderDaysBefore',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<RecurringRule, RecurringRule, QAfterFilterCondition>
+      reminderDaysBeforeLessThan(
+    int value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'reminderDaysBefore',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<RecurringRule, RecurringRule, QAfterFilterCondition>
+      reminderDaysBeforeBetween(
+    int lower,
+    int upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'reminderDaysBefore',
         lower: lower,
         includeLower: includeLower,
         upper: upper,
@@ -1072,6 +1326,32 @@ extension RecurringRuleQuerySortBy
   }
 
   QueryBuilder<RecurringRule, RecurringRule, QAfterSortBy>
+      sortByIsSubscription() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'isSubscription', Sort.asc);
+    });
+  }
+
+  QueryBuilder<RecurringRule, RecurringRule, QAfterSortBy>
+      sortByIsSubscriptionDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'isSubscription', Sort.desc);
+    });
+  }
+
+  QueryBuilder<RecurringRule, RecurringRule, QAfterSortBy> sortByLabel() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'label', Sort.asc);
+    });
+  }
+
+  QueryBuilder<RecurringRule, RecurringRule, QAfterSortBy> sortByLabelDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'label', Sort.desc);
+    });
+  }
+
+  QueryBuilder<RecurringRule, RecurringRule, QAfterSortBy>
       sortByLastGenerated() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'lastGenerated', Sort.asc);
@@ -1082,6 +1362,20 @@ extension RecurringRuleQuerySortBy
       sortByLastGeneratedDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'lastGenerated', Sort.desc);
+    });
+  }
+
+  QueryBuilder<RecurringRule, RecurringRule, QAfterSortBy>
+      sortByReminderDaysBefore() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'reminderDaysBefore', Sort.asc);
+    });
+  }
+
+  QueryBuilder<RecurringRule, RecurringRule, QAfterSortBy>
+      sortByReminderDaysBeforeDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'reminderDaysBefore', Sort.desc);
     });
   }
 
@@ -1204,6 +1498,32 @@ extension RecurringRuleQuerySortThenBy
   }
 
   QueryBuilder<RecurringRule, RecurringRule, QAfterSortBy>
+      thenByIsSubscription() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'isSubscription', Sort.asc);
+    });
+  }
+
+  QueryBuilder<RecurringRule, RecurringRule, QAfterSortBy>
+      thenByIsSubscriptionDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'isSubscription', Sort.desc);
+    });
+  }
+
+  QueryBuilder<RecurringRule, RecurringRule, QAfterSortBy> thenByLabel() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'label', Sort.asc);
+    });
+  }
+
+  QueryBuilder<RecurringRule, RecurringRule, QAfterSortBy> thenByLabelDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'label', Sort.desc);
+    });
+  }
+
+  QueryBuilder<RecurringRule, RecurringRule, QAfterSortBy>
       thenByLastGenerated() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'lastGenerated', Sort.asc);
@@ -1214,6 +1534,20 @@ extension RecurringRuleQuerySortThenBy
       thenByLastGeneratedDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'lastGenerated', Sort.desc);
+    });
+  }
+
+  QueryBuilder<RecurringRule, RecurringRule, QAfterSortBy>
+      thenByReminderDaysBefore() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'reminderDaysBefore', Sort.asc);
+    });
+  }
+
+  QueryBuilder<RecurringRule, RecurringRule, QAfterSortBy>
+      thenByReminderDaysBeforeDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'reminderDaysBefore', Sort.desc);
     });
   }
 
@@ -1284,9 +1618,30 @@ extension RecurringRuleQueryWhereDistinct
   }
 
   QueryBuilder<RecurringRule, RecurringRule, QDistinct>
+      distinctByIsSubscription() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'isSubscription');
+    });
+  }
+
+  QueryBuilder<RecurringRule, RecurringRule, QDistinct> distinctByLabel(
+      {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'label', caseSensitive: caseSensitive);
+    });
+  }
+
+  QueryBuilder<RecurringRule, RecurringRule, QDistinct>
       distinctByLastGenerated() {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'lastGenerated');
+    });
+  }
+
+  QueryBuilder<RecurringRule, RecurringRule, QDistinct>
+      distinctByReminderDaysBefore() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'reminderDaysBefore');
     });
   }
 
@@ -1349,10 +1704,29 @@ extension RecurringRuleQueryProperty
     });
   }
 
+  QueryBuilder<RecurringRule, bool, QQueryOperations> isSubscriptionProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'isSubscription');
+    });
+  }
+
+  QueryBuilder<RecurringRule, String?, QQueryOperations> labelProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'label');
+    });
+  }
+
   QueryBuilder<RecurringRule, DateTime?, QQueryOperations>
       lastGeneratedProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'lastGenerated');
+    });
+  }
+
+  QueryBuilder<RecurringRule, int, QQueryOperations>
+      reminderDaysBeforeProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'reminderDaysBefore');
     });
   }
 

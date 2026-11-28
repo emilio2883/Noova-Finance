@@ -11,6 +11,7 @@ import '../features/goals/goals_screen.dart';
 import '../features/charts/charts_screen.dart';
 import '../features/import/import_screen.dart';
 import '../features/search/search_screen.dart';
+import '../features/recurring/recurring_screen.dart';
 import '../features/quincenal/quincenal_screen.dart';
 import '../features/settings/settings_screen.dart';
 
@@ -56,6 +57,10 @@ GoRouter buildRouter() {
       GoRoute(
         path: '/search',
         builder: (context, state) => const SearchScreen(),
+      ),
+      GoRoute(
+        path: '/recurring',
+        builder: (context, state) => const RecurringScreen(),
       ),
       GoRoute(
         path: '/budgets',

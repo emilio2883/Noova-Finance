@@ -68,6 +68,13 @@ class SettingsScreen extends ConsumerWidget {
             subtitle: 'Límites por subcategoría',
             onTap: () => context.push('/budgets'),
           ),
+          _item(
+            context,
+            icon: Icons.autorenew,
+            title: 'Recurrentes',
+            subtitle: 'Movimientos automáticos y próximos pagos',
+            onTap: () => context.push('/recurring'),
+          ),
           _section(context, 'APARIENCIA'),
           Card(
             margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),

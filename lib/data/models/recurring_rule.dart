@@ -39,6 +39,15 @@ class RecurringRule {
   /// Last date a transaction was auto-generated for this rule.
   DateTime? lastGenerated;
 
+  /// Optional human label (provider/servicio, e.g. "Netflix").
+  String? label;
+
+  /// Marks this rule as a subscription (Feature 5).
+  bool isSubscription;
+
+  /// Days before the charge to remind (0 = same day).
+  int reminderDaysBefore;
+
   /// Decimal view of [amountBps]. Not stored.
   @ignore
   Decimal get amount => DecimalUtils.fromBps(amountBps);
@@ -53,5 +62,8 @@ class RecurringRule {
     required this.startDate,
     this.endDate,
     DateTime? lastGenerated,
+    this.label,
+    this.isSubscription = false,
+    this.reminderDaysBefore = 0,
   });
 }

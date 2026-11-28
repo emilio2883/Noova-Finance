@@ -137,6 +137,11 @@ class _QuincenalScreenState extends ConsumerState<QuincenalScreen> {
         title: const Text('Consumo'),
         actions: [
           IconButton(
+            tooltip: 'Buscar',
+            icon: const Icon(Icons.search),
+            onPressed: () => context.push('/search'),
+          ),
+          IconButton(
             tooltip: 'Ver análisis',
             icon: const Icon(Icons.bar_chart),
             onPressed: () => context.push('/charts'),

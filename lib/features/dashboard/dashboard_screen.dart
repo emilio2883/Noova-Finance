@@ -38,6 +38,11 @@ class DashboardScreen extends ConsumerWidget {
         title: const NoovaLogoImage(),
         actions: [
           IconButton(
+            tooltip: 'Buscar',
+            icon: const Icon(Icons.search),
+            onPressed: () => context.push('/search'),
+          ),
+          IconButton(
             tooltip: 'Ver análisis',
             icon: const Icon(Icons.insights_outlined),
             onPressed: () => context.push('/charts'),

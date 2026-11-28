@@ -46,6 +46,13 @@ class SettingsScreen extends ConsumerWidget {
             subtitle: 'Guardar .xlsx en el dispositivo y abrir con Excel',
             onTap: () => _export(context, ref),
           ),
+          _item(
+            context,
+            icon: Icons.search,
+            title: 'Buscar movimientos',
+            subtitle: 'Filtros por texto, categoría, fecha e importe',
+            onTap: () => context.push('/search'),
+          ),
           _section(context, 'GESTIÓN'),
           _item(
             context,

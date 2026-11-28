@@ -10,6 +10,7 @@ import '../features/dashboard/dashboard_screen.dart';
 import '../features/goals/goals_screen.dart';
 import '../features/charts/charts_screen.dart';
 import '../features/import/import_screen.dart';
+import '../features/search/search_screen.dart';
 import '../features/quincenal/quincenal_screen.dart';
 import '../features/settings/settings_screen.dart';
 
@@ -51,6 +52,10 @@ GoRouter buildRouter() {
       GoRoute(
         path: '/charts',
         builder: (context, state) => const ChartsScreen(),
+      ),
+      GoRoute(
+        path: '/search',
+        builder: (context, state) => const SearchScreen(),
       ),
       GoRoute(
         path: '/budgets',

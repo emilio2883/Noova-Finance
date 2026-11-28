@@ -1,6 +1,7 @@
 import 'package:decimal/decimal.dart';
 import 'package:isar/isar.dart';
 
+import '../models/search_filters.dart';
 import '../models/transaction.dart';
 
 /// CRUD + queries for transactions.
@@ -74,6 +75,39 @@ class TransactionRepository {
       if (t.type == TransactionType.expense) total += t.amount;
     }
     return total;
+  }
+
+  /// Advanced search. Isar narrows by date range; remaining filters
+  /// (type/category/amount/recurring/text) are applied in Dart.
+  Future<List<Transaction>> search(SearchFilters f) async {
+    final start = f.from ?? DateTime(2000, 1, 1);
+    final end = f.to != null
+        ? DateTime(f.to!.year, f.to!.month, f.to!.day, 23, 59, 59, 999)
+        : DateTime(2999, 12, 31, 23, 59, 59, 999);
+    var results =
+        await _isar.transactions.filter().dateBetween(start, end).sortByDateDesc().findAll();
+    if (f.type != null) {
+      results = results.where((t) => t.type == f.type).toList();
+    }
+    if (f.categoryIds.isNotEmpty) {
+      results = results.where((t) => f.categoryIds.contains(t.categoryId)).toList();
+    }
+    if (f.onlyRecurring) {
+      results = results.where((t) => t.isRecurring).toList();
+    }
+    if (f.minBps != null) {
+      results = results.where((t) => t.amountBps >= f.minBps!).toList();
+    }
+    if (f.maxBps != null) {
+      results = results.where((t) => t.amountBps <= f.maxBps!).toList();
+    }
+    final txt = f.text.trim().toLowerCase();
+    if (txt.isNotEmpty) {
+      results = results
+          .where((t) => (t.description ?? '').toLowerCase().contains(txt))
+          .toList();
+    }
+    return results;
   }
 
   /// Count of all transactions.
